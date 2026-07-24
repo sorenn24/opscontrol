@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="Panel de Control Operativo de Sucursales — Gestión de tareas y turnos para líderes." />
+  <title>OpsControl | Sucursal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/reset.css" />
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/app.css" />
+  <link rel="stylesheet" href="components/Login/Login.css" />
+  <link rel="stylesheet" href="components/LeaderDashboard/LeaderDashboard.css" />
+  <link rel="stylesheet" href="components/AdminDashboard/AdminDashboard.css" />
+
+  <style>
+  /* ── SVG Icon utility ──────────────────────────────── */
+  .icon { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .icon svg { display:block; }
+
+  /* ── Login overrides ───────────────────────────────── */
+  .login-select-wrapper {
+    position: relative;
+    margin-bottom: var(--space-5);
+  }
+  .login-select-btn {
+    width: 100%;
+    min-height: var(--touch-min);
+    background: var(--bg-surface-2);
+    border: 2px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .login-select-btn:hover,
+  .login-select-btn.open {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
+    background: var(--bg-surface-3);
+  }
+  .login-select-btn-label {
+    flex: 1;
+    text-align: left;
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .login-select-btn-label.selected-label {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  .login-select-btn-icon {
+    transition: transform var(--transition-base);
+    color: var(--text-muted);
+  }
+  .login-select-btn.open .login-select-btn-icon {
+    transform: rotate(180deg);
+  }
+
+  /* Dropdown */
+  .login-select-dropdown {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0; right: 0;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    animation: fadeInUp 180ms ease both;
+  }
+  .login-select-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    border-bottom: 1px solid var(--border-subtle);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .login-select-option:last-child { border-bottom: none; }
+  .login-select-option:hover { background: var(--bg-surface-2); }
+  .login-select-option.active { background: var(--color-primary-subtle); }
+  .login-select-option-name {
+    flex: 1;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .login-select-option-role {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .login-select-divider {
+    height: 1px;
+    background: var(--border-default);
+    margin: var(--space-1) 0;
+  }
+
+  /* ── User Management Modal (Admin) ─────────────────── */
+  .user-mgmt-section {
+    padding: 0 var(--space-5) var(--space-5);
+    margin-top: var(--space-2);
+  }
+  .user-mgmt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+  }
+  .user-mgmt-title {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .add-leader-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    min-height: 40px;
+    background: var(--color-primary-subtle);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .add-leader-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 4px 12px var(--color-primary-glow);
+  }
+  .leader-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+    animation: fadeInUp 250ms ease both;
+  }
+  .leader-row-info { flex: 1; }
+  .leader-row-name {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .leader-row-pin {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+  .leader-row-actions {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .icon-btn {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface-2);
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .icon-btn:hover { background: var(--bg-surface-3); color: var(--text-primary); }
+  .icon-btn.danger:hover { background: var(--color-danger-subtle); border-color: var(--color-danger); color: var(--color-danger); }
+
+  /* Leader form modal */
+  .leader-form { display: flex; flex-direction: column; gap: var(--space-4); }
+  .form-field { display: flex; flex-direction: column; gap: var(--space-2); }
+  .form-label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .form-input {
+    width: 100%;
+    min-height: var(--touch-min);
+    background: var(--bg-surface-2);
+    border: 2px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-4);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all var(--transition-base);
+  }
+  .form-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
+    outline: none;
+    background: var(--bg-surface-3);
+  }
+  .form-hint {
+    font-size: var(--font-size-xs);
+    color: var(--text-disabled);
+  }
+  .form-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  /* Admin tabs */
+  .admin-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 var(--space-5);
+    background: var(--bg-surface);
+  }
+  .admin-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .admin-tab-btn:hover { color: var(--text-primary); }
+  .admin-tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+  .admin-tab-panel { display: none; }
+  .admin-tab-panel.active { display: block; }
+
+  /* scrollable body for admin */
+  .admin-body { overflow-y: auto; flex: 1; }
+
+  /* empty leaders state */
+  .no-leaders {
+    padding: var(--space-8) var(--space-6);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  /* avatar circle generic */
+  .user-avatar-circle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--color-primary-subtle);
+    border: 2px solid var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-primary);
+  }
+  .user-avatar-circle.admin-av {
+    background: var(--color-success-subtle);
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  /* pin dots preview */
+  .pin-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .pin-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-disabled);
+  }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+  // ============================================================
+  // SVG ICON LIBRARY
+  // ============================================================
+  const ICONS = {
+    user: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+    userPlus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>`,
+    shield: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    lock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+    eye: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    eyeOff: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`,
+    logout: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+    refresh: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>`,
+    chevronDown: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+    chevronRight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+    check: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    close: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    plus: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    edit: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+    trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>`,
+    calendar: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    sun: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+    moon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+    clipboard: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`,
+    barChart: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`,
+    users: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+    warning: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    checkCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    xCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    package: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
+    dollar: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  };
+  function icon(name, size=18, color='currentColor') {
+    const svg = ICONS[name];
+    if(!svg) return '';
+    return svg.replace(/width="\d+"/, `width="${size}"`).replace(/height="\d+"/, `height="${size}"`);
+  }
+
+  // ============================================================
+  // UTILS — dateUtils
+  // ============================================================
+  const DAY_NAMES_ES=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const MONTH_NAMES_ES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  function getDayOfWeek(d=new Date()){return d.getDay();}
+  function isMonday(d=new Date()){return getDayOfWeek(d)===1;}
+  function isThursday(d=new Date()){return getDayOfWeek(d)===4;}
+  function formatDateLong(d=new Date()){return `${DAY_NAMES_ES[d.getDay()]}, ${d.getDate()} de ${MONTH_NAMES_ES[d.getMonth()]} de ${d.getFullYear()}`;}
+  function formatDateKey(d=new Date()){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+  function parseDateKey(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d);}
+  function todayKey(){return formatDateKey(new Date());}
+
+  // ============================================================
+  // UTILS — storage
+  // ============================================================
+  const SK={DRAFTS:'opscontrol:drafts',SUBMISSIONS:'opscontrol:submissions',SESSION:'opscontrol:session',USERS:'opscontrol:users'};
+  function _r(k,fb=null){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):fb;}catch{return fb;}}
+  function _w(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+  function _rm(k){try{localStorage.removeItem(k);}catch{}}
+  function saveSession(u){_w(SK.SESSION,u);}
+  function loadSession(){return _r(SK.SESSION,null);}
+  function clearSession(){_rm(SK.SESSION);}
+  function saveDraft(r){const ds=_r(SK.DRAFTS,[]);const i=ds.findIndex(d=>d.userId===r.userId&&d.turno===r.turno&&d.dateKey===r.dateKey);if(i>=0)ds[i]=r;else ds.push(r);_w(SK.DRAFTS,ds);}
+  function getDrafts(){return _r(SK.DRAFTS,[]);}
+  function clearDraft(u,t,d){_w(SK.DRAFTS,_r(SK.DRAFTS,[]).filter(x=>!(x.userId===u&&x.turno===t&&x.dateKey===d)));}
+  function saveSubmission(s){const ss=_r(SK.SUBMISSIONS,[]);const i=ss.findIndex(x=>x.userId===s.userId&&x.turno===s.turno&&x.dateKey===s.dateKey);if(i>=0)ss[i]=s;else ss.push(s);_w(SK.SUBMISSIONS,ss);}
+  function getSubmissionsForDate(d){return _r(SK.SUBMISSIONS,[]).filter(s=>s.dateKey===d);}
+
+  // ── User Management (persisted) ──────────────────────────────
+  const DEFAULT_USERS=[
+    {id:'alessandro',name:'Alessandro',role:'leader',pin:'1234'},
+    {id:'cesar',name:'César',role:'leader',pin:'1234'},
+    {id:'sam',name:'Sam',role:'leader',pin:'1234'},
+    {id:'soren',name:'Soren',role:'leader',pin:'1234'},
+    {id:'jefa',name:'La Jefa',role:'admin',pin:'9999'},
+  ];
+  function getStoredUsers(){
+    const stored=_r(SK.USERS,null);
+    if(!stored){_w(SK.USERS,DEFAULT_USERS);return DEFAULT_USERS;}
+    // Ensure admin always exists
+    if(!stored.find(u=>u.role==='admin')){stored.push(DEFAULT_USERS.find(u=>u.role==='admin'));}
+    return stored;
+  }
+  function saveUsers(users){_w(SK.USERS,users);}
+  function addLeader(name,pin){
+    const users=getStoredUsers();
+    const id='u_'+Date.now();
+    users.push({id,name:name.trim(),role:'leader',pin:pin.trim()});
+    saveUsers(users);
+    return id;
+  }
+  function updateLeader(id,name,pin){
+    const users=getStoredUsers().map(u=>u.id===id?{...u,name:name.trim(),pin:pin.trim()}:u);
+    saveUsers(users);
+  }
+  function deleteLeader(id){
+    const users=getStoredUsers().filter(u=>u.id!==id||u.role==='admin');
+    saveUsers(users);
+  }
+
+  // ============================================================
+  // DATA — tasks
+  // ============================================================
+  const TURNO_1_TASKS=[
+    {id:'t1_01',label:'Entrada con arqueo y foto de fondo T1'},
+    {id:'t1_02',label:'Revisar ventas por hora'},
+    {id:'t1_03',label:'Ventas en el grupo'},
+    {id:'t1_04',label:'Llenado de bitácora T1'},
+    {id:'t1_05',label:'Revisión de faltantes'},
+    {id:'t1_06',label:'Actualizar formato de vacantes'},
+    {id:'t1_07',label:'Ventas Drive'},
+    {id:'t1_08',label:'Actas validadas'},
+    {id:'t1_09',label:'Revisión de snack y novedades'},
+    {id:'t1_10',label:'Revisión de tickets i24h'},
+    {id:'t1_11',label:'Auditoría diaria'},
+    {id:'t1_12',label:'Revisiones de contadores'},
+    {id:'t1_13',label:'Captura de actas del día anterior'},
+    {id:'t1_14',label:'Revisión de limpieza T1'},
+    {id:'t1_15',label:'Corte de sucursal'},
+  ];
+  const TURNO_2_TASKS=[
+    {id:'t2_01',label:'Entrada con arqueo y foto de fondo T2'},
+    {id:'t2_02',label:'Auditoría diaria'},
+    {id:'t2_03',label:'Revisar ventas por hora'},
+    {id:'t2_04',label:'Llenado correcto de bitácora T2'},
+    {id:'t2_05',label:'Revisión de snack y novedades'},
+    {id:'t2_06',label:'Revisión de limpieza T2'},
+    {id:'t2_07',label:'Corte de caja'},
+  ];
+  const SPECIAL_TASKS=[
+    {id:'sp_inventarios',label:'Inventarios',days:[1,4],icon:'package'},
+    {id:'sp_nominas',label:'Nóminas',days:[4],icon:'dollar'},
+  ];
+  function getTasksForTurno(turno,date=new Date()){
+    const base=turno==='T1'?TURNO_1_TASKS:TURNO_2_TASKS;
+    const day=date.getDay();
+    const specials=SPECIAL_TASKS.filter(t=>t.days.includes(day)).map(t=>({...t,special:true}));
+    return [...base,...specials];
+  }
+
+  // ============================================================
+  // STORE — appState
+  // ============================================================
+  const _subs=new Map();
+  let _st={currentUser:null,currentTurno:'T1',taskProgress:{},adminViewDate:null};
+  function getState(){return{..._st};}
+  function setState(patch){
+    const prev=_st;_st={..._st,...patch};
+    Object.keys(patch).forEach(k=>{_subs.get(k)?.forEach(fn=>fn(_st[k],prev[k]));});
+    _subs.get('*')?.forEach(fn=>fn(_st,prev));
+  }
+  function subscribe(k,fn){if(!_subs.has(k))_subs.set(k,new Set());_subs.get(k).add(fn);return()=>_subs.get(k)?.delete(fn);}
+  function resetTaskProgress(){setState({taskProgress:{}});}
+  function toggleTask(id){const p={..._st.taskProgress};p[id]=!p[id];setState({taskProgress:p});}
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  const TOAST_ICONS={success:'checkCircle',danger:'xCircle',warning:'warning',info:'info'};
+  function showToast(msg,type='info',dur=3500){
+    const c=document.getElementById('toast-container');if(!c)return;
+    const t=document.createElement('div');
+    t.className=`toast toast-${type}`;t.setAttribute('role','alert');
+    t.innerHTML=`<span class="icon">${icon(TOAST_ICONS[type]||'info',16)}</span><span style="flex:1;line-height:1.4;">${msg}</span>`;
+    c.appendChild(t);
+    const tm=setTimeout(()=>_dismissToast(t),dur);
+    t.addEventListener('click',()=>{clearTimeout(tm);_dismissToast(t);},{once:true});
+  }
+  function _dismissToast(t){t.classList.add('toast-exit');t.addEventListener('animationend',()=>t.remove(),{once:true});}
+
+  // ============================================================
+  // API SERVICE — fetch() real al backend Express + MongoDB
+  // ============================================================
+  const API_BASE = '/api';
+
+  async function _apiFetch(endpoint, options={}){
+    try{
+      const res = await fetch(API_BASE + endpoint, {
+        headers: {'Content-Type':'application/json', ...options.headers},
+        credentials: 'include',
+        ...options,
+      });
+      const data = await res.json();
+      if(!res.ok) return {error: data.error || `Error ${res.status}`};
+      return data;
+    } catch(e){
+      return {error: 'Sin conexión con el servidor.'};
+    }
+  }
+
+  // Auth
+  async function apiAuthenticate(userId, pin){
+    return _apiFetch('/auth/login', {method:'POST', body: JSON.stringify({userId, pin})});
+  }
+  async function apiGetUsers(){
+    const data = await _apiFetch('/users');
+    return data.users || [];
+  }
+  async function apiLogout(){
+    return _apiFetch('/auth/logout', {method:'POST'});
+  }
+
+  // Users CRUD (admin)
+  async function apiAddLeaderRemote(name, pin){
+    return _apiFetch('/users', {method:'POST', body: JSON.stringify({name, pin})});
+  }
+  async function apiUpdateLeaderRemote(id, name, pin){
+    return _apiFetch(`/users/${id}`, {method:'PUT', body: JSON.stringify({name, pin})});
+  }
+  async function apiDeleteLeaderRemote(id){
+    return _apiFetch(`/users/${id}`, {method:'DELETE'});
+  }
+  async function apiGetPin(id){
+    const data = await _apiFetch(`/users/${id}/pin`);
+    return data.pin || null;
+  }
+
+  // Reports
+  async function apiSubmitReport(report){
+    if(!navigator.onLine){ saveDraft(report); return {success:false, offline:true}; }
+    const result = await _apiFetch('/reports', {method:'POST', body: JSON.stringify(report)});
+    if(result.success) clearDraft(report.turno, report.dateKey);
+    if(result.error){ saveDraft(report); return {success:false, error:result.error}; }
+    return result;
+  }
+  async function apiFetchReports(dateKey){
+    const data = await _apiFetch(`/reports${dateKey?'?date='+dateKey:''}`);
+    return data.reports || [];
+  }
+
+  // Offline draft helpers (localStorage fallback)
+  const DRAFT_KEY='opscontrol:drafts';
+  function saveDraft(r){try{const ds=JSON.parse(localStorage.getItem(DRAFT_KEY)||'[]');const i=ds.findIndex(d=>d.turno===r.turno&&d.dateKey===r.dateKey);if(i>=0)ds[i]=r;else ds.push(r);localStorage.setItem(DRAFT_KEY,JSON.stringify(ds));}catch{}}
+  function clearDraft(turno,dateKey){try{const ds=JSON.parse(localStorage.getItem(DRAFT_KEY)||'[]').filter(d=>!(d.turno===turno&&d.dateKey===dateKey));localStorage.setItem(DRAFT_KEY,JSON.stringify(ds));}catch{}}
+
+  // ============================================================
+  // LOGIN COMPONENT
+  // ============================================================
+  let _lUsers=[],_lSelected=null,_lLoading=false,_lShowPin=false,_lError='',_lDropOpen=false;
+
+  async function mountLogin(container){
+    _lUsers=await apiGetUsers();
+    _lSelected=null;_lLoading=false;_lShowPin=false;_lError='';_lDropOpen=false;
+    _renderLogin(container);
+  }
+
+  function _renderLogin(container){
+    const leaders=_lUsers.filter(u=>u.role==='leader');
+    const admin=_lUsers.find(u=>u.role==='admin');
+    const selUser=_lUsers.find(u=>u.id===_lSelected);
+
+    container.innerHTML=`
+    <div class="login-page">
+      <div class="login-card" role="main">
+
+        <div class="login-brand">
+          <div class="login-logo">${icon('clipboard',28)}</div>
+          <h1 class="login-title">OpsControl</h1>
+          <p class="login-subtitle">Panel de Control de Sucursal</p>
+        </div>
+
+        <!-- User Dropdown -->
+        <div class="pin-section">
+          <p class="login-section-label">¿Quién eres?</p>
+          <div class="login-select-wrapper" id="select-wrapper">
+            <button class="login-select-btn${_lDropOpen?' open':''}" id="select-btn" type="button" aria-haspopup="listbox" aria-expanded="${_lDropOpen}">
+              <span class="icon" style="color:var(--text-muted)">${icon(_lSelected&&selUser?.role==='admin'?'shield':'user',18)}</span>
+              <span class="login-select-btn-label${_lSelected?' selected-label':''}">${selUser?selUser.name:'Selecciona tu nombre...'}</span>
+              <span class="login-select-btn-icon icon">${icon('chevronDown',16)}</span>
+            </button>
+            ${_lDropOpen?`
+            <div class="login-select-dropdown" role="listbox" id="select-dropdown">
+              ${leaders.map(u=>`
+                <div class="login-select-option${_lSelected===u.id?' active':''}" data-user-id="${u.id}" role="option" aria-selected="${_lSelected===u.id}" tabindex="0">
+                  <span class="icon" style="color:var(--color-primary)">${icon('user',18)}</span>
+                  <span class="login-select-option-name">${u.name}</span>
+                  <span class="login-select-option-role">Líder</span>
+                </div>`).join('')}
+              ${admin?`
+              <div class="login-select-divider"></div>
+              <div class="login-select-option${_lSelected===admin.id?' active':''}" data-user-id="${admin.id}" role="option" aria-selected="${_lSelected===admin.id}" tabindex="0">
+                <span class="icon" style="color:var(--color-success)">${icon('shield',18)}</span>
+                <span class="login-select-option-name">${admin.name}</span>
+                <span class="login-select-option-role">Administrador</span>
+              </div>`:''}
+            </div>`:''}
+          </div>
+        </div>
+
+        <!-- PIN -->
+        <div class="pin-section">
+          <p class="login-section-label">PIN de acceso</p>
+          <div class="pin-wrapper">
+            <span class="icon" style="position:absolute;left:var(--space-4);top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;">${icon('lock',16)}</span>
+            <input type="${_lShowPin?'text':'password'}" id="pin-input" class="pin-input" style="padding-left:calc(var(--space-4)*2 + 16px);" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="current-password" aria-label="Ingresa tu PIN" ${!_lSelected?'disabled':''}/>
+            <button class="pin-toggle" id="pin-toggle" type="button" aria-label="${_lShowPin?'Ocultar PIN':'Mostrar PIN'}">
+              <span class="icon">${icon(_lShowPin?'eyeOff':'eye',18)}</span>
+            </button>
+          </div>
+        </div>
+
+        ${_lError?`<div class="login-error" role="alert"><span class="icon">${icon('warning',16)}</span><span>${_lError}</span></div>`:''}
+
+        <button id="login-submit" class="btn btn-primary btn-full" type="button" ${_lLoading||!_lSelected?'disabled':''}>
+          ${_lLoading?`<div class="spinner"></div><span>Verificando...</span>`:`<span>Ingresar</span><span class="icon">${icon('chevronRight',16)}</span>`}
+        </button>
+
+        <div class="login-footer">OpsControl v1.0 &nbsp;·&nbsp; Uso interno</div>
+      </div>
+    </div>`;
+
+    // Select button toggle
+    document.getElementById('select-btn')?.addEventListener('click',()=>{
+      _lDropOpen=!_lDropOpen;_renderLogin(container);
+      if(_lDropOpen)setTimeout(()=>document.getElementById('select-dropdown')?.querySelector('.login-select-option')?.focus(),50);
+    });
+    // Close dropdown on outside click
+    if(_lDropOpen){
+      setTimeout(()=>{
+        document.addEventListener('click',function closeDD(e){
+          if(!document.getElementById('select-wrapper')?.contains(e.target)){
+            _lDropOpen=false;_renderLogin(container);
+          }
+          document.removeEventListener('click',closeDD);
+        });
+      },10);
+    }
+    // Options
+    container.querySelectorAll('.login-select-option').forEach(opt=>{
+      opt.addEventListener('click',()=>{
+        _lSelected=opt.dataset.userId;_lDropOpen=false;_lError='';
+        _renderLogin(container);
+        setTimeout(()=>document.getElementById('pin-input')?.focus(),50);
+      });
+      opt.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();opt.click();}});
+    });
+    // PIN
+    const pinEl=document.getElementById('pin-input');
+    if(pinEl){
+      pinEl.addEventListener('keydown',e=>{if(e.key==='Enter')_handleLoginSubmit(container);});
+      pinEl.addEventListener('input',()=>{if(_lError){_lError='';pinEl.classList.remove('error');const er=container.querySelector('.login-error');if(er)er.remove();}});
+    }
+    document.getElementById('pin-toggle')?.addEventListener('click',()=>{
+      _lShowPin=!_lShowPin;
+      const inp=document.getElementById('pin-input');
+      const tog=document.getElementById('pin-toggle');
+      if(inp)inp.type=_lShowPin?'text':'password';
+      if(tog)tog.innerHTML=`<span class="icon">${icon(_lShowPin?'eyeOff':'eye',18)}</span>`;
+    });
+    document.getElementById('login-submit')?.addEventListener('click',()=>_handleLoginSubmit(container));
+  }
+
+  async function _handleLoginSubmit(container){
+    if(_lLoading||!_lSelected)return;
+    const pin=document.getElementById('pin-input')?.value?.trim();
+    if(!pin){_lError='Por favor ingresa tu PIN.';_renderLogin(container);document.getElementById('pin-input')?.classList.add('error');return;}
+    _lLoading=true;_lError='';_renderLogin(container);
+    const result=await apiAuthenticate(_lSelected,pin);
+    _lLoading=false;
+    if(result.error){_lError=result.error;_renderLogin(container);document.getElementById('pin-input')?.classList.add('error');return;}
+    // La sesión la maneja el backend con cookie — solo actualizamos el estado local
+    setState({currentUser:result.user,taskProgress:{}});
+    showToast(`¡Bienvenido, ${result.user.name}!`,'success');
+  }
+
+  // ============================================================
+  // LEADER DASHBOARD
+  // ============================================================
+  let _ldContainer=null,_ldUnsubs=[],_ldSubmitState='idle',_ldTasks=[],_ldSubmitted=false;
+
+  function mountLeaderDashboard(el){
+    _ldContainer=el;_ldUnsubs.forEach(f=>f());_ldUnsubs=[];
+    _ldSubmitted=false;_ldSubmitState='idle';resetTaskProgress();
+    _ldUnsubs.push(
+      subscribe('currentTurno',()=>{resetTaskProgress();_ldSubmitted=false;_ldSubmitState='idle';_ldRenderAll();}),
+      subscribe('taskProgress',()=>_ldRenderPartial()),
+    );
+    _ldRenderAll();
+  }
+  function unmountLeaderDashboard(){_ldUnsubs.forEach(f=>f());_ldUnsubs=[];_ldContainer=null;}
+
+  function _ldRenderAll(){
+    if(!_ldContainer)return;
+    const{currentUser,currentTurno}=getState();
+    const today=new Date();
+    _ldTasks=getTasksForTurno(currentTurno,today);
+    const specials=_ldTasks.filter(t=>t.special);
+    _ldContainer.innerHTML=`
+    <div class="leader-page" role="main">
+      <header class="leader-header" role="banner">
+        <div class="header-user-info">
+          <div class="header-avatar">${icon('user',20)}</div>
+          <div><div class="header-name">${currentUser?.name||'Líder'}</div><div class="header-role">Líder de turno</div></div>
+        </div>
+        <button id="logout-btn" class="header-logout-btn" aria-label="Cerrar sesión" type="button">${icon('logout',18)}</button>
+      </header>
+
+      <div class="date-info-bar">
+        <span class="icon" style="color:var(--text-muted)">${icon('calendar',14)}</span>
+        <span>${formatDateLong(today)}</span>
+        ${isMonday(today)?'<span class="badge badge-warning">Lunes</span>':''}
+        ${isThursday(today)?'<span class="badge badge-warning">Jueves</span>':''}
+      </div>
+
+      <div class="turno-section">
+        <p class="turno-label">Turno activo</p>
+        <div class="turno-tabs" role="tablist">
+          ${['T1','T2'].map(t=>`
+          <button class="turno-tab${currentTurno===t?' active':''}" data-turno="${t}" role="tab" aria-selected="${currentTurno===t}" type="button">
+            <span class="icon">${icon(t==='T1'?'sun':'moon',16)}</span>
+            <span class="turno-tab-label">Turno ${t==='T1'?'1':'2'}</span>
+            <span class="turno-tab-sub">${t==='T1'?'Mañana':'Tarde'}</span>
+          </button>`).join('')}
+        </div>
+      </div>
+
+      ${specials.length?`<div class="special-banner" role="note">
+        <span class="icon" style="color:var(--color-warning)">${icon('warning',20)}</span>
+        <div><div class="special-banner-text">Tareas especiales de hoy</div>
+        <div class="special-banner-sub">${specials.map(t=>`${t.label}`).join(' · ')} — agregadas automáticamente</div></div>
+      </div>`:''}
+
+      <div class="task-section" id="task-section">${_ldTaskListHTML()}</div>
+      <div class="leader-footer" id="leader-footer">${_ldFooterHTML()}</div>
+    </div>`;
+    _ldAttachAll();
+  }
+
+  function _ldTaskListHTML(){
+    const{taskProgress}=getState();
+    const checked=Object.values(taskProgress).filter(Boolean).length;
+    const total=_ldTasks.length;
+    const pct=total>0?Math.round(checked/total*100):0;
+    return`
+    <div class="task-section-header">
+      <h2 class="task-section-title">Lista de actividades</h2>
+      <div class="task-progress-pill">${checked}/${total}</div>
+    </div>
+    <div class="task-progress-bar-wrap" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+      <div class="task-progress-bar-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="task-list" role="list">
+      ${_ldTasks.map((task,i)=>{
+        const chk=taskProgress[task.id]||false;
+        return`<div class="task-card${chk?' checked':''}${task.special?' special-task':''}" data-task-id="${task.id}" role="listitem" tabindex="0" style="animation:fadeInUp ${200+i*35}ms ease both;">
+          <div class="task-checkbox"><span class="task-checkbox-icon icon">${icon('check',14)}</span></div>
+          <span class="task-label">${task.special?`<span class="icon" style="display:inline-flex;margin-right:6px;vertical-align:middle;color:var(--color-warning)">${icon(task.icon||'warning',14)}</span>`:''}${task.label}</span>
+          ${task.special?`<span class="icon" style="color:var(--color-warning);opacity:0.7;">${icon(task.icon||'warning',14)}</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  function _ldFooterHTML(){
+    const{taskProgress}=getState();
+    const checked=Object.values(taskProgress).filter(Boolean).length;
+    const total=_ldTasks.length;
+    const allDone=checked===total&&total>0;
+    const sc=_ldSubmitState==='success'?' state-success':_ldSubmitState==='error'?' state-error':_ldSubmitState==='offline'?' state-offline':' btn-primary';
+    const bc=_ldSubmitState==='loading'?`<div class="spinner"></div><span>Guardando...</span>`:
+      _ldSubmitState==='success'?`<span class="icon">${icon('checkCircle',16)}</span><span>Guardado correctamente</span>`:
+      _ldSubmitState==='offline'?`<span class="icon">${icon('warning',16)}</span><span>Guardado sin conexión</span>`:
+      _ldSubmitState==='error'?`<span class="icon">${icon('xCircle',16)}</span><span>Error — Toca para reintentar</span>`:
+      allDone?`<span class="icon">${icon('checkCircle',16)}</span><span>Guardar registro</span>`:
+      `<span>Guardar avance (${checked}/${total})</span>`;
+    return`<div class="submit-summary">
+      <span class="submit-summary-text">Completadas: <strong>${checked}</strong> de <strong>${total}</strong></span>
+      ${allDone?'<span class="badge badge-success">¡Todo listo!</span>':''}
+    </div>
+    <button id="submit-btn" class="btn btn-full submit-btn${sc}" type="button" ${_ldSubmitState==='loading'?'disabled':''}>${bc}</button>`;
+  }
+
+  function _ldRenderPartial(){
+    if(!_ldContainer)return;
+    const ts=_ldContainer.querySelector('#task-section');
+    const ft=_ldContainer.querySelector('#leader-footer');
+    if(ts)ts.innerHTML=_ldTaskListHTML();
+    if(ft)ft.innerHTML=_ldFooterHTML();
+    _ldAttachTaskListeners();
+    _ldContainer.querySelector('#submit-btn')?.addEventListener('click',_ldSubmit);
+  }
+
+  function _ldAttachAll(){
+    _ldContainer.querySelector('#logout-btn')?.addEventListener('click',async()=>{
+      await apiLogout();
+      setState({currentUser:null,taskProgress:{},currentTurno:'T1'});
+    });
+    _ldContainer.querySelectorAll('.turno-tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{if(tab.dataset.turno!==getState().currentTurno)setState({currentTurno:tab.dataset.turno});});
+    });
+    _ldAttachTaskListeners();
+    _ldContainer.querySelector('#submit-btn')?.addEventListener('click',_ldSubmit);
+  }
+
+  function _ldAttachTaskListeners(){
+    _ldContainer?.querySelectorAll('.task-card').forEach(card=>{
+      const h=()=>{if(_ldSubmitted&&_ldSubmitState==='success')return;toggleTask(card.dataset.taskId);};
+      card.addEventListener('click',h);
+      card.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();h();}});
+    });
+  }
+
+  async function _ldSubmit(){
+    if(_ldSubmitState==='loading')return;
+    const{currentUser,currentTurno,taskProgress}=getState();
+    _ldSubmitState='loading';_ldRenderPartial();
+    const snap={};_ldTasks.forEach(t=>{snap[t.id]=taskProgress[t.id]||false;});
+    const result=await apiSubmitReport({userId:currentUser.id,turno:currentTurno,dateKey:todayKey(),tasks:snap});
+    if(result.success){_ldSubmitState='success';_ldSubmitted=true;showToast('¡Registro guardado correctamente!','success',4000);}
+    else if(result.offline){_ldSubmitState='offline';_ldSubmitted=true;showToast('Sin conexión — guardado localmente','warning',5000);}
+    else{_ldSubmitState='error';showToast('Error al guardar. Intenta de nuevo.','danger');}
+    _ldRenderPartial();
+  }
+
+  // ============================================================
+  // ADMIN DASHBOARD
+  // ============================================================
+  let _adContainer=null,_adReports=[],_adLoading=true,_adDateKey=todayKey(),_adActiveTab='reports';
+
+  async function mountAdminDashboard(el){
+    _adContainer=el;_adDateKey=todayKey();_adLoading=true;_adActiveTab='reports';
+    _adRenderShell();await _adLoad();
+  }
+  function unmountAdminDashboard(){_adContainer=null;}
+
+  async function _adLoad(silent=false){
+    if(!silent){_adLoading=true;_adRenderMatrix();}
+    _adReports=await apiFetchReports(_adDateKey);
+    _adLoading=false;_adRenderMatrix();_adRenderStats();
+    if(silent)showToast('Datos actualizados','info',2000);
+  }
+
+  function _adRenderShell(){
+    if(!_adContainer)return;
+    const{currentUser}=getState();
+    _adContainer.innerHTML=`
+    <div class="admin-page" role="main" style="display:flex;flex-direction:column;min-height:100dvh;">
+      <header class="admin-header" role="banner">
+        <div class="admin-header-top">
+          <div class="admin-brand">
+            <div class="admin-brand-icon">${icon('barChart',20)}</div>
+            <div><h1 class="admin-title">Panel Admin</h1><div class="admin-subtitle">${currentUser?.name}</div></div>
+          </div>
+          <div class="admin-header-actions">
+            <button id="admin-refresh-btn" class="admin-refresh-btn" aria-label="Actualizar" type="button">${icon('refresh',18)}</button>
+            <button id="admin-logout-btn" class="admin-logout-btn" aria-label="Cerrar sesión" type="button">${icon('logout',18)}</button>
+          </div>
+        </div>
+        <div class="admin-date-row">
+          <span class="icon" style="color:var(--text-muted);margin-left:var(--space-1)">${icon('calendar',16)}</span>
+          <input type="date" id="admin-date-input" class="admin-date-input" value="${_adDateKey}" max="${todayKey()}" aria-label="Seleccionar fecha"/>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn${_adActiveTab==='reports'?' active':''}" data-tab="reports" type="button">
+          ${icon('barChart',16)}<span>Reportes</span>
+        </button>
+        <button class="admin-tab-btn${_adActiveTab==='leaders'?' active':''}" data-tab="leaders" type="button">
+          ${icon('users',16)}<span>Líderes</span>
+        </button>
+      </div>
+
+      <!-- Tab: Reports -->
+      <div class="admin-tab-panel${_adActiveTab==='reports'?' active':''}" id="tab-reports">
+        <div class="admin-stats-bar" id="admin-stats-bar" style="padding-top:var(--space-4)">
+          ${_adSkeletonStats()}
+        </div>
+        <div class="matrix-section">
+          <p class="matrix-section-title">Estado por líder — <span id="matrix-date-label">${formatDateLong(parseDateKey(_adDateKey))}</span></p>
+          <div class="leader-grid" id="leader-grid">${_adSkeletonGrid()}</div>
+        </div>
+      </div>
+
+      <!-- Tab: Leaders Management -->
+      <div class="admin-tab-panel${_adActiveTab==='leaders'?' active':''}" id="tab-leaders">
+        <div class="user-mgmt-section">
+          <div class="user-mgmt-header">
+            <p class="user-mgmt-title">Gestión de líderes</p>
+            <button class="add-leader-btn" id="add-leader-btn" type="button">
+              ${icon('userPlus',16)}<span>Agregar</span>
+            </button>
+          </div>
+          <div id="leaders-list"></div>
+        </div>
+      </div>
+    </div>
+    <div id="modal-container"></div>`;
+    _adAttachHeader();
+    _adAttachTabListeners();
+  }
+
+  async function _adRefreshLeaderList(){
+    const list=_adContainer?.querySelector('#leaders-list');
+    if(list){
+      list.innerHTML = `<div style="text-align:center;padding:var(--space-8);"><div class="spinner" style="border-color:var(--color-primary);border-bottom-color:transparent;margin:0 auto;width:28px;height:28px;border-width:3px;"></div></div>`;
+      const users = await apiGetUsers();
+      list.innerHTML=_adRenderLeaderRows(users);
+      _adAttachLeaderListListeners();
+    }
+  }
+
+  function _adRenderLeaderRows(leaders){
+    const list=leaders.filter(u=>u.role==='leader');
+    if(!list.length)return`<div class="no-leaders"><span>${icon('users',32)}</span><p style="margin-top:var(--space-3);">No hay líderes registrados</p></div>`;
+    return list.map((u,i)=>`
+    <div class="leader-row" style="animation-delay:${i*60}ms;" id="lrow-${u.id}">
+      <div class="user-avatar-circle">${icon('user',18)}</div>
+      <div class="leader-row-info">
+        <div class="leader-row-name">${u.name}</div>
+        <div class="leader-row-pin">
+          ${icon('lock',12)}
+          <span>PIN: </span>
+          <span class="pin-dots">${Array.from('----').map(()=>'<span class="pin-dot"></span>').join('')}</span>
+          <button class="btn-show-pin" data-uid="${u.id}" style="background:none;border:none;cursor:pointer;color:var(--color-primary);font-size:11px;font-weight:600;padding:0 4px;" type="button">Ver</button>
+        </div>
+      </div>
+      <div class="leader-row-actions">
+        <button class="icon-btn edit-leader-btn" data-uid="${u.id}" data-name="${u.name}" aria-label="Editar ${u.name}" type="button">${icon('edit',15)}</button>
+        <button class="icon-btn danger delete-leader-btn" data-uid="${u.id}" data-name="${u.name}" aria-label="Eliminar ${u.name}" type="button">${icon('trash',15)}</button>
+      </div>
+    </div>`).join('');
+  }
+
+  function _adRenderStats(){
+    const bar=_adContainer?.querySelector('#admin-stats-bar');
+    if(!bar)return;
+    const complete=_adReports.filter(r=>r.t1?.submitted||r.t2?.submitted).length;
+    const both=_adReports.filter(r=>r.t1?.submitted&&r.t2?.submitted).length;
+    const pending=_adReports.length-complete;
+    bar.innerHTML=`
+    <div class="stat-card" style="animation-delay:0ms;"><div class="stat-value" style="color:var(--color-success);">${complete}</div><div class="stat-label">Con registro</div></div>
+    <div class="stat-card" style="animation-delay:60ms;"><div class="stat-value" style="color:var(--color-primary);">${both}</div><div class="stat-label">Ambos turnos</div></div>
+    <div class="stat-card" style="animation-delay:120ms;"><div class="stat-value" style="color:var(--color-danger);">${pending}</div><div class="stat-label">Sin registro</div></div>`;
+  }
+
+  function _adRenderMatrix(){
+    const grid=_adContainer?.querySelector('#leader-grid');
+    if(!grid)return;
+    if(_adLoading){grid.innerHTML=_adSkeletonGrid();return;}
+    if(!_adReports.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1;padding:var(--space-12) var(--space-6);">${icon('users',40)}<p style="margin-top:var(--space-4);color:var(--text-muted);">Sin líderes registrados</p></div>`;return;}
+    grid.innerHTML=_adReports.map((r,i)=>{
+      const t1=r.t1?.submitted,t2=r.t2?.submitted;
+      let sc='status-pending',dot='🔴';
+      if(t1&&t2){sc='status-complete';dot='🟢';}
+      else if(t1||t2){sc='status-partial';dot='🟡';}
+      const t1l=t1?`${r.t1.completed}/${r.t1.total}`:'—';
+      const t2l=t2?`${r.t2.completed}/${r.t2.total}`:'—';
+      return`<div class="leader-card ${sc}" data-lid="${r.userId}" role="button" tabindex="0" style="animation-delay:${i*80}ms;">
+        <div class="leader-card-avatar" style="color:var(--${sc==='status-complete'?'color-success':sc==='status-partial'?'color-warning':'color-danger'})">${icon('user',26)}</div>
+        <div class="leader-card-name">${r.name}</div>
+        <div class="leader-card-status-row">
+          <div class="turno-pills">
+            <span class="turno-pill turno-pill-t1${t1?' done':' none'}">${icon('sun',10)} T1 ${t1l}</span>
+            <span class="turno-pill turno-pill-t2${t2?' done':' none'}">${icon('moon',10)} T2 ${t2l}</span>
+          </div>
+        </div>
+        <div class="leader-card-semaphore">${dot}</div>
+        <div class="leader-card-tap-hint">Toca para ver detalle</div>
+      </div>`;
+    }).join('');
+    _adContainer?.querySelectorAll('.leader-card').forEach(card=>{
+      const h=()=>{const r=_adReports.find(x=>x.userId===card.dataset.lid);if(r)_adOpenModal(r);};
+      card.addEventListener('click',h);
+      card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();h();}});
+    });
+  }
+
+  function _adSkeletonStats(){return Array(3).fill('').map(()=>`<div class="stat-card"><div class="skeleton" style="width:48px;height:30px;margin:0 auto var(--space-2);"></div><div class="skeleton" style="width:80px;height:12px;margin:0 auto;"></div></div>`).join('');}
+  function _adSkeletonGrid(){return Array(4).fill('').map(()=>`<div class="leader-card" style="pointer-events:none;gap:var(--space-4);"><div class="skeleton" style="width:52px;height:52px;border-radius:50%;"></div><div class="skeleton" style="width:80px;height:14px;"></div><div class="skeleton" style="width:110px;height:22px;border-radius:999px;"></div><div class="skeleton" style="width:28px;height:28px;border-radius:50%;"></div></div>`).join('');}
+
+  function _adAttachHeader(){
+    _adContainer?.querySelector('#admin-logout-btn')?.addEventListener('click',()=>{clearSession();setState({currentUser:null});});
+    _adContainer?.querySelector('#admin-refresh-btn')?.addEventListener('click',async()=>{
+      const btn=_adContainer.querySelector('#admin-refresh-btn');
+      if(btn)btn.classList.add('spinning');
+      await _adLoad(true);
+      if(btn)btn.classList.remove('spinning');
+    });
+    _adContainer?.querySelector('#admin-date-input')?.addEventListener('change',async e=>{
+      _adDateKey=e.target.value||todayKey();
+      const lbl=_adContainer?.querySelector('#matrix-date-label');
+      if(lbl)lbl.textContent=formatDateLong(parseDateKey(_adDateKey));
+      await _adLoad();
+    });
+  }
+
+  function _adAttachTabListeners(){
+    _adContainer?.querySelectorAll('.admin-tab-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        _adActiveTab=btn.dataset.tab;
+        _adContainer.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===_adActiveTab));
+        _adContainer.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${_adActiveTab}`));
+        if(_adActiveTab==='leaders')_adRefreshLeaderList();
+      });
+    });
+    _adAttachLeaderListListeners();
+    _adContainer?.querySelector('#add-leader-btn')?.addEventListener('click',()=>_adOpenLeaderForm());
+  }
+
+  function _adRefreshLeaderList(){
+    const list=_adContainer?.querySelector('#leaders-list');
+    if(list){list.innerHTML=_adRenderLeaderRows();_adAttachLeaderListListeners();}
+  }
+
+  function _adAttachLeaderListListeners(){
+    // Edit
+    _adContainer?.querySelectorAll('.edit-leader-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const pin = await apiGetPin(btn.dataset.uid);
+        _adOpenLeaderForm(btn.dataset.uid,btn.dataset.name,pin);
+      });
+    });
+    // Delete
+    _adContainer?.querySelectorAll('.delete-leader-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(confirm(`¿Eliminar al líder "${btn.dataset.name}"? Esta acción no se puede deshacer.`)){
+          await apiDeleteLeaderRemote(btn.dataset.uid);
+          _adRefreshLeaderList();
+          showToast(`Líder "${btn.dataset.name}" eliminado`,'info');
+        }
+      });
+    });
+    // Show PIN toggle
+    _adContainer?.querySelectorAll('.btn-show-pin').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const uid=btn.dataset.uid;
+        const pinEl=btn.closest('.leader-row-pin');
+        const dotsEl=pinEl?.querySelector('.pin-dots');
+        if(dotsEl){
+          const showing=btn.textContent.trim()==='Ocultar';
+          if(showing){
+            dotsEl.innerHTML=Array.from('----').map(()=>'<span class="pin-dot"></span>').join('');
+            btn.textContent='Ver';
+          }else{
+            const pin = await apiGetPin(uid);
+            dotsEl.innerHTML=pin||'----';
+            btn.textContent='Ocultar';
+          }
+        }
+      });
+    });
+  }
+
+  function _adOpenLeaderForm(uid=null,name='',pin=''){
+    const mc=_adContainer?.querySelector('#modal-container');if(!mc)return;
+    const isEdit=!!uid;
+    mc.innerHTML=`
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-label="${isEdit?'Editar líder':'Agregar líder'}">
+      <div class="modal-sheet" style="max-width:480px;">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <h2 style="font-size:var(--font-size-lg);font-weight:800;color:var(--text-primary);">${isEdit?'Editar líder':'Agregar líder'}</h2>
+              <p style="font-size:var(--font-size-sm);color:var(--text-muted);margin-top:2px;">${isEdit?'Modifica el nombre o PIN':'Completa los datos del nuevo líder'}</p>
+            </div>
+            <button class="modal-close-btn" id="modal-close-btn" type="button">${icon('close',16)}</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="leader-form">
+            <div class="form-field">
+              <label class="form-label" for="lf-name">Nombre</label>
+              <input class="form-input" id="lf-name" type="text" value="${name}" placeholder="Ej: Juan García" maxlength="30" autocomplete="off"/>
+              <span class="form-hint">Nombre que aparecerá en el selector de login</span>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="lf-pin">PIN de acceso</label>
+              <div style="position:relative;">
+                <span class="icon" style="position:absolute;left:var(--space-4);top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;">${icon('lock',16)}</span>
+                <input class="form-input" id="lf-pin" type="text" value="${pin}" placeholder="Ej: 1234" maxlength="8" autocomplete="off" inputmode="numeric" style="padding-left:calc(var(--space-4)*2 + 16px);letter-spacing:0.2em;font-weight:700;"/>
+              </div>
+              <span class="form-hint">Mínimo 4 dígitos numéricos</span>
+            </div>
+            <div id="lf-error" style="display:none;" class="login-error" role="alert"></div>
+            <div class="form-actions">
+              <button class="btn btn-ghost" id="lf-cancel" type="button" style="flex:1;">Cancelar</button>
+              <button class="btn btn-primary" id="lf-save" type="button" style="flex:2;">${icon('checkCircle',16)}<span>${isEdit?'Guardar cambios':'Agregar líder'}</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    const closeModal=()=>{mc.innerHTML='';};
+    mc.querySelector('#modal-close-btn')?.addEventListener('click',closeModal);
+    mc.querySelector('#lf-cancel')?.addEventListener('click',closeModal);
+    mc.querySelector('#modal-overlay')?.addEventListener('click',e=>{if(e.target.id==='modal-overlay')closeModal();});
+    mc.querySelector('#lf-save')?.addEventListener('click', async ()=>{
+      const n=mc.querySelector('#lf-name')?.value?.trim();
+      const p=mc.querySelector('#lf-pin')?.value?.trim();
+      const errEl=mc.querySelector('#lf-error');
+      if(!n||n.length<2){errEl.textContent='El nombre debe tener al menos 2 caracteres.';errEl.style.display='flex';return;}
+      if(!p||p.length<4||!/^\d+$/.test(p)){errEl.textContent='El PIN debe ser numérico y tener mínimo 4 dígitos.';errEl.style.display='flex';return;}
+
+      const btnSave = mc.querySelector('#lf-save');
+      btnSave.disabled = true;
+      btnSave.innerHTML = '<div class="spinner" style="border-color:var(--color-primary);border-bottom-color:transparent;width:18px;height:18px;"></div>';
+
+      if(isEdit){
+        await apiUpdateLeaderRemote(uid,n,p);
+        showToast(`Líder "${n}" actualizado`,'success');
+      } else {
+        await apiAddLeaderRemote(n,p);
+        showToast(`Líder "${n}" agregado`,'success');
+      }
+      closeModal();
+      _adRefreshLeaderList();
+    });
+    document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){closeModal();document.removeEventListener('keydown',esc);}});
+  }
+
+  function _adOpenModal(report){
+    const mc=_adContainer?.querySelector('#modal-container');if(!mc)return;
+    const dateLabel=formatDateLong(parseDateKey(_adDateKey));
+    mc.innerHTML=`
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="modal-leader-info">
+              <div class="modal-leader-avatar" style="color:var(--color-primary)">${icon('user',24)}</div>
+              <div><div class="modal-leader-name">${report.name}</div><div class="modal-leader-date">${dateLabel}</div></div>
+            </div>
+            <button class="modal-close-btn" id="modal-close-btn" type="button">${icon('close',16)}</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          ${_adModalTurno(report,'T1')}
+          ${_adModalTurno(report,'T2')}
+        </div>
+      </div>
+    </div>`;
+    const close=()=>{mc.innerHTML='';};
+    mc.querySelector('#modal-close-btn')?.addEventListener('click',close);
+    mc.querySelector('#modal-overlay')?.addEventListener('click',e=>{if(e.target.id==='modal-overlay')close();});
+    document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',esc);}});
+  }
+
+  function _adModalTurno(report,turno){
+    const data=turno==='T1'?report.t1:report.t2;
+    const label=turno==='T1'?'Turno 1 — Mañana':'Turno 2 — Tarde';
+    const ico=turno==='T1'?'sun':'moon';
+    if(!data?.submitted)return`
+    <div class="modal-turno-section">
+      <div class="modal-turno-header">
+        <span class="modal-turno-title"><span class="icon" style="display:inline-flex;margin-right:6px;vertical-align:middle;">${icon(ico,15)}</span>${label}</span>
+        <span class="badge badge-danger">Sin registro</span>
+      </div>
+      <div class="modal-no-data"><span class="modal-no-data-icon icon">${icon('clipboard',32)}</span><span class="modal-no-data-text">No se registró actividad en este turno</span></div>
+    </div>`;
+    const ids=Object.keys(data.tasks);
+    const time=data.submittedAt?new Date(data.submittedAt).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}):'';
+    const done=Object.values(data.tasks).filter(Boolean).length;
+    const pct=Math.round(done/ids.length*100);
+    const dayTasks=getTasksForTurno(turno,parseDateKey(_adDateKey));
+    const tmap=Object.fromEntries(dayTasks.map(t=>[t.id,t]));
+    return`
+    <div class="modal-turno-section">
+      <div class="modal-turno-header">
+        <span class="modal-turno-title"><span class="icon" style="display:inline-flex;margin-right:6px;vertical-align:middle;">${icon(ico,15)}</span>${label}</span>
+        <div style="display:flex;align-items:center;gap:var(--space-2);">
+          ${pct===100?`<span class="badge badge-success">${icon('checkCircle',11)} Completo</span>`:`<span class="badge badge-warning">${pct}%</span>`}
+          ${time?`<span class="modal-turno-meta">${icon('check',11)} ${time}</span>`:''}
+        </div>
+      </div>
+      <div class="task-progress-bar-wrap" style="margin-bottom:var(--space-4);">
+        <div class="task-progress-bar-fill" style="width:${pct}%;"></div>
+      </div>
+      <div>
+        ${ids.map(id=>{
+          const chk=data.tasks[id];
+          const lbl=tmap[id]?.label||id;
+          return`<div class="modal-task-row">
+            <div class="modal-task-dot ${chk?'done':'pending'}">${icon(chk?'check':'close',11)}</div>
+            <span class="modal-task-label${chk?'':' pending-text'}">${lbl}</span>
+            <span style="font-size:11px;font-weight:600;color:var(--${chk?'color-success':'color-danger'});">${chk?'Hecho':'Pendiente'}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ============================================================
+  // APP BOOTSTRAP
+  // ============================================================
+  (function init(){
+    const root=document.getElementById('root');
+    if(!root)return;
+    const saved=loadSession();
+    if(saved)setState({currentUser:saved});
+    subscribe('currentUser',(user,prev)=>{
+      if(prev){try{unmountLeaderDashboard();}catch{}try{unmountAdminDashboard();}catch{}};
+      _mountView(root);
+    });
+    _mountView(root);
+  })();
+
+  function _mountView(root){
+    const{currentUser}=getState();
+    if(!currentUser){mountLogin(root);return;}
+    if(currentUser.role==='admin'){mountAdminDashboard(root);return;}
+    mountLeaderDashboard(root);
+  }
+  </script>
+</body>
+</html>

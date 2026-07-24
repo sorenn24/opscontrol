@@ -1,0 +1,19 @@
+# render.yaml — Configuración de despliegue automático en Render
+# Render lee este archivo y configura el servicio solo
+
+services:
+  - type: web
+    name: opscontrol
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false   # Lo introduces manualmente en el dashboard de Render
+      - key: SESSION_SECRET
+        generateValue: true  # Render genera uno automáticamente
+      - key: CLIENT_ORIGIN
+        value: https://opscontrol.onrender.com
