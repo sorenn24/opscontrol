@@ -12,7 +12,7 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 // ── GET /api/users ────────────────────────────────────────────
 // Devuelve todos los usuarios activos SIN el PIN
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const users = await User.find({ active: true }).sort({ role: -1, name: 1 });
     return res.json({ users: users.map(u => u.toPublic()) });
