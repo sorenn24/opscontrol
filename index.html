@@ -74,7 +74,8 @@
     background: var(--bg-surface-2);
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    overflow: hidden;
+    overflow-y: auto;
+    max-height: 250px;
     box-shadow: var(--shadow-lg);
     z-index: 100;
     animation: fadeInUp 180ms ease both;
@@ -716,7 +717,7 @@
       <header class="leader-header" role="banner">
         <div class="header-user-info">
           <div class="header-avatar">${icon('user',20)}</div>
-          <div><div class="header-name">${currentUser?.name||'Líder'}</div><div class="header-role">Líder de turno</div></div>
+          <div><div class="header-name">${currentUser?.name||'Líder'}</div></div>
         </div>
         <button id="logout-btn" class="header-logout-btn" aria-label="Cerrar sesión" type="button">${icon('logout',18)}</button>
       </header>
