@@ -533,6 +533,10 @@
     const data = await _apiFetch(`/reports${dateKey?'?date='+dateKey:''}`);
     return data.reports || [];
   }
+  async function apiGetMyReports(dateKey){
+    const data = await _apiFetch(`/reports/me${dateKey?'?date='+dateKey:''}`);
+    return data || {};
+  }
 
   // Offline draft helpers (localStorage fallback)
   const DRAFT_KEY='opscontrol:drafts';
@@ -678,9 +682,25 @@
     _ldContainer=el;_ldUnsubs.forEach(f=>f());_ldUnsubs=[];
     _ldSubmitted=false;_ldSubmitState='idle';resetTaskProgress();
     _ldUnsubs.push(
-      subscribe('currentTurno',()=>{resetTaskProgress();_ldSubmitted=false;_ldSubmitState='idle';_ldRenderAll();}),
+      subscribe('currentTurno',()=>_ldLoadData()),
       subscribe('taskProgress',()=>_ldRenderPartial()),
     );
+    _ldLoadData();
+  }
+  async function _ldLoadData(){
+    const {currentTurno}=getState();
+    _ldContainer.innerHTML=`<div style="padding:40px;text-align:center"><div class="spinner" style="margin:0 auto;border-color:var(--color-primary);border-bottom-color:transparent;"></div></div>`;
+    const data=await apiGetMyReports(todayKey());
+    const rep=currentTurno==='T1'?data.t1:data.t2;
+    if(rep && rep.tasks){
+      _ldSubmitted=rep.submitted;
+      _ldSubmitState=rep.submitted?'success':'idle';
+      setState({taskProgress:rep.tasks});
+    } else {
+      _ldSubmitted=false;
+      _ldSubmitState='idle';
+      resetTaskProgress();
+    }
     _ldRenderAll();
   }
   function unmountLeaderDashboard(){_ldUnsubs.forEach(f=>f());_ldUnsubs=[];_ldContainer=null;}

@@ -39,6 +39,7 @@ app.use(cors({
 }));
 
 // Sesiones almacenadas en MongoDB
+app.set('trust proxy', 1);
 app.use(session({
   name:   'opscontrol.sid',
   secret: process.env.SESSION_SECRET || 'dev-secret-insecuro',
