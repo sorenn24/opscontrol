@@ -820,7 +820,7 @@
 
   function _ldAttachTaskListeners(){
     _ldContainer?.querySelectorAll('.task-card').forEach(card=>{
-      const h=()=>{if(_ldSubmitted&&_ldSubmitState==='success')return;toggleTask(card.dataset.taskId);};
+      const h=()=>{toggleTask(card.dataset.taskId);};
       card.addEventListener('click',h);
       card.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();h();}});
     });
@@ -1023,11 +1023,6 @@
     });
     _adAttachLeaderListListeners();
     _adContainer?.querySelector('#add-leader-btn')?.addEventListener('click',()=>_adOpenLeaderForm());
-  }
-
-  function _adRefreshLeaderList(){
-    const list=_adContainer?.querySelector('#leaders-list');
-    if(list){list.innerHTML=_adRenderLeaderRows();_adAttachLeaderListListeners();}
   }
 
   function _adAttachLeaderListListeners(){
