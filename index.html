@@ -576,7 +576,7 @@
           <div class="login-select-wrapper" id="select-wrapper">
             <button class="login-select-btn${_lDropOpen?' open':''}" id="select-btn" type="button" aria-haspopup="listbox" aria-expanded="${_lDropOpen}">
               <span class="icon" style="color:var(--text-muted)">${icon(_lSelected&&selUser?.role==='admin'?'shield':'user',18)}</span>
-              <span class="login-select-btn-label${_lSelected?' selected-label':''}">${selUser?selUser.name:'Selecciona tu nombre...'}</span>
+              <span class="login-select-btn-label${_lSelected?' selected-label':''}">${selUser?(selUser.role==='admin'?'Administrador':selUser.name):'Selecciona tu nombre...'}</span>
               <span class="login-select-btn-icon icon">${icon('chevronDown',16)}</span>
             </button>
             ${_lDropOpen?`
@@ -590,8 +590,7 @@
               <div class="login-select-divider"></div>
               <div class="login-select-option${_lSelected===admin.id?' active':''}" data-user-id="${admin.id}" role="option" aria-selected="${_lSelected===admin.id}" tabindex="0">
                 <span class="icon" style="color:var(--color-success)">${icon('shield',18)}</span>
-                <span class="login-select-option-name">${admin.name}</span>
-                <span class="login-select-option-role">Administrador</span>
+                <span class="login-select-option-name">Administrador</span>
               </div>`:''}
             </div>`:''}
           </div>
