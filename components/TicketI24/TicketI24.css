@@ -1,0 +1,465 @@
+/* ============================================================
+   TICKETI24.CSS — Módulo Validación de Tickets i24
+   Paleta Blanco & Rojo (Mobile-First, estilo App nativa)
+   ============================================================ */
+
+.ticket-container {
+  padding: var(--space-4) var(--space-4) var(--space-12);
+  max-width: 720px;
+  margin: 0 auto;
+  animation: fadeIn 300ms ease both;
+}
+
+/* ── Controles superiores (Fecha y Sucursal) ── */
+.ticket-header-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 600px) {
+  .ticket-header-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.ticket-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.ticket-control-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ticket-select, .ticket-date-input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  outline: none;
+}
+.ticket-select:focus, .ticket-date-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+  background: var(--bg-surface);
+}
+
+/* ── Opción Rápida: Sin Tickets i24 hoy ── */
+.ticket-no-tickets-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-surface);
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-5);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ticket-no-tickets-box:hover {
+  border-color: var(--text-muted);
+}
+.ticket-no-tickets-box.active {
+  background: var(--color-success-subtle);
+  border: 2px solid var(--color-success);
+  color: var(--color-success);
+}
+.ticket-checkbox-custom {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  transition: all var(--transition-fast);
+  color: transparent;
+}
+.ticket-no-tickets-box.active .ticket-checkbox-custom {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #fff;
+}
+.ticket-no-tickets-label {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  flex: 1;
+  color: var(--text-primary);
+}
+.ticket-no-tickets-box.active .ticket-no-tickets-label {
+  color: var(--color-success);
+}
+
+/* ── Desglose por Turnos (T1, T2, T3) ── */
+.ticket-turnos-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.ticket-turno-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: opacity var(--transition-base);
+}
+.ticket-turno-card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.ticket-turno-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ticket-turno-title {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ticket-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.ticket-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ticket-input-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.ticket-input-prefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ticket-input-prefix span {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: var(--font-size-base);
+}
+.ticket-num-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px 0 28px;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.ticket-num-input:focus {
+  border-color: var(--color-primary);
+  background: var(--bg-surface);
+}
+
+/* Faltante calculado */
+.ticket-faltante-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface-2);
+  border-radius: var(--radius-md);
+}
+.ticket-faltante-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.ticket-faltante-val {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.ticket-faltante-val.danger {
+  color: var(--color-danger);
+}
+.ticket-faltante-val.success {
+  color: var(--color-success);
+}
+
+/* ── Elemento 4: Notas / Observaciones ── */
+.ticket-note-section {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.ticket-note-toggle {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.ticket-note-btn {
+  flex: 1;
+  min-height: 40px;
+  border: 2px solid var(--border-default);
+  background: var(--bg-surface-2);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.ticket-note-btn.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+.ticket-note-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  outline: none;
+}
+.ticket-note-textarea:focus {
+  border-color: var(--color-primary);
+  background: var(--bg-surface);
+}
+
+/* ── Formato Estructurado Generado ── */
+.ticket-output-section {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.ticket-output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+.ticket-output-title {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.ticket-copy-btn {
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+.ticket-copy-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.ticket-output-text {
+  font-family: monospace;
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── VISTA ADMINISTRADOR (La Jefa) ── */
+.ticket-admin-kpi {
+  background: linear-gradient(135deg, var(--color-danger) 0%, hsl(0, 78%, 34%) 100%);
+  color: #fff;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  box-shadow: 0 10px 25px var(--color-danger-glow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ticket-kpi-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.ticket-kpi-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+.ticket-kpi-value {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.ticket-admin-leader-group {
+  margin-bottom: var(--space-6);
+}
+.ticket-admin-leader-header {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ticket-branch-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+@media (min-width: 600px) {
+  .ticket-branch-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ticket-branch-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+.ticket-branch-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+.ticket-branch-name {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.ticket-branch-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+.ticket-branch-badge.pendiente {
+  background: var(--bg-surface-3);
+  color: var(--text-muted);
+}
+.ticket-branch-badge.sin-tickets {
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+.ticket-branch-badge.registrado {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.ticket-branch-details {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.6;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-2);
+}
+.ticket-branch-details strong {
+  color: var(--text-primary);
+}
+
+/* Tabs de navegación en Leader Dashboard */
+.leader-nav-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--border-subtle);
+  margin-bottom: var(--space-5);
+  background: var(--bg-surface);
+  padding: 0 var(--space-4);
+}
+.leader-nav-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+.leader-nav-tab:hover {
+  color: var(--text-primary);
+}
+.leader-nav-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}

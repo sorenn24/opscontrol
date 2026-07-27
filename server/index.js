@@ -19,6 +19,7 @@ const path         = require('path');
 const authRouter    = require('./routes/auth');
 const usersRouter   = require('./routes/users');
 const reportsRouter = require('./routes/reports');
+const ticketsRouter = require('./routes/tickets');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -62,6 +63,7 @@ app.use(session({
 app.use('/api/auth',    authRouter);
 app.use('/api/users',   usersRouter);
 app.use('/api/reports', reportsRouter);
+app.use('/api/tickets', ticketsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -83,26 +85,31 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
-// ── Seed de datos iniciales ───────────────────────────────────
-// Si no hay usuarios en la BD, crea los predeterminados
-async function seedDefaultUsers() {
+// ── Sincronización de usuarios y mapeo oficial ───────────────
+async function syncLeaderBranches() {
   const User = require('./models/User');
-  const count = await User.countDocuments();
-  if (count > 0) return;
+  const OFFICIAL_MAPPING = [
+    { name: 'César',      role: 'leader', pin: '1234', branches: ['LN2', 'INS', 'SMB', 'PL2', 'EC2', 'AVM'] },
+    { name: 'Soren',      role: 'leader', pin: '1234', branches: ['ORD', 'CUA'] },
+    { name: 'Alessandro', role: 'leader', pin: '1234', branches: ['ROD', 'LNO'] },
+    { name: 'Yessi',      role: 'leader', pin: '1234', branches: ['MTU', 'MTC', 'BTJ', 'RS2'] },
+    { name: 'Sam',        role: 'leader', pin: '1234', branches: ['RCS', 'ANT'] },
+    { name: 'La Jefa',    role: 'admin',  pin: '9999', branches: [] },
+  ];
 
-  console.log('🌱 Creando usuarios iniciales...');
-  await User.insertMany([
-    { name: 'Alessandro', role: 'leader', pin: '1234' },
-    { name: 'César',      role: 'leader', pin: '1234' },
-    { name: 'Sam',        role: 'leader', pin: '1234' },
-    { name: 'Soren',      role: 'leader', pin: '1234' },
-    { name: 'La Jefa',    role: 'admin',  pin: '9999' },
-  ]);
-  console.log('✅ Usuarios iniciales creados');
+  console.log('🔄 Sincronizando mapeo oficial de sucursales por líder...');
+  for (const u of OFFICIAL_MAPPING) {
+    await User.findOneAndUpdate(
+      { name: u.name },
+      { $set: { branches: u.branches, role: u.role }, $setOnInsert: { pin: u.pin, active: true } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+  console.log('✅ Sucursales y usuarios oficiales sincronizados correctamente');
 }
 
 mongoose.connection.once('open', () => {
-  seedDefaultUsers().catch(console.error);
+  syncLeaderBranches().catch(console.error);
 });
 
 // ── Arrancar servidor ─────────────────────────────────────────

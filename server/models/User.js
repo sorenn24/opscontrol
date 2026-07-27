@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  branches: {
+    type: [String],
+    default: [],
+  },
 }, {
   timestamps: true,
 });
@@ -29,9 +33,10 @@ const UserSchema = new mongoose.Schema({
 // No exponer el PIN en las respuestas JSON por defecto
 UserSchema.methods.toPublic = function () {
   return {
-    id:   this._id.toString(),
-    name: this.name,
-    role: this.role,
+    id:       this._id.toString(),
+    name:     this.name,
+    role:     this.role,
+    branches: this.branches || [],
   };
 };
 

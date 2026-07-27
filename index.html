@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="components/Login/Login.css" />
   <link rel="stylesheet" href="components/LeaderDashboard/LeaderDashboard.css" />
   <link rel="stylesheet" href="components/AdminDashboard/AdminDashboard.css" />
+  <link rel="stylesheet" href="components/TicketI24/TicketI24.css" />
 
   <style>
   /* ── SVG Icon utility ──────────────────────────────── */
@@ -337,6 +338,7 @@
     info: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
     package: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
     dollar: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+    ticket: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/></svg>`,
   };
   function icon(name, size=18, color='currentColor') {
     const svg = ICONS[name];
@@ -538,6 +540,13 @@
     const data = await _apiFetch(`/reports/me${dateKey?'?date='+dateKey:''}`);
     return data || {};
   }
+  async function apiFetchTickets(dateKey){
+    const data = await _apiFetch(`/tickets${dateKey?'?date='+dateKey:''}`);
+    return data.tickets || [];
+  }
+  async function apiSubmitTicket(payload){
+    return _apiFetch('/tickets', {method:'POST', body: JSON.stringify(payload)});
+  }
 
   // Offline draft helpers (localStorage fallback)
   const DRAFT_KEY='opscontrol:drafts';
@@ -675,11 +684,11 @@
   // ============================================================
   // LEADER DASHBOARD
   // ============================================================
-  let _ldContainer=null,_ldUnsubs=[],_ldSubmitState='idle',_ldTasks=[],_ldSubmitted=false;
+  let _ldContainer=null,_ldUnsubs=[],_ldSubmitState='idle',_ldTasks=[],_ldSubmitted=false,_ldActiveTab='bitacora';
 
   function mountLeaderDashboard(el){
     _ldContainer=el;_ldUnsubs.forEach(f=>f());_ldUnsubs=[];
-    _ldSubmitted=false;_ldSubmitState='idle';resetTaskProgress();
+    _ldSubmitted=false;_ldSubmitState='idle';_ldActiveTab='bitacora';resetTaskProgress();
     _ldUnsubs.push(
       subscribe('currentTurno',()=>_ldLoadData()),
       subscribe('taskProgress',()=>_ldRenderPartial()),
@@ -727,6 +736,16 @@
         ${isThursday(today)?'<span class="badge badge-warning">Jueves</span>':''}
       </div>
 
+      <div class="leader-nav-tabs">
+        <button class="leader-nav-tab${_ldActiveTab==='bitacora'?' active':''}" data-ltab="bitacora" type="button">
+          ${icon('checkCircle',16)}<span>Bitácora Operativa</span>
+        </button>
+        <button class="leader-nav-tab${_ldActiveTab==='tickets'?' active':''}" data-ltab="tickets" type="button">
+          ${icon('ticket',16)}<span>Validación Tickets i24</span>
+        </button>
+      </div>
+
+      ${_ldActiveTab==='bitacora'?`
       <div class="turno-section">
         <p class="turno-label">Turno activo</p>
         <div class="turno-tabs" role="tablist">
@@ -747,6 +766,7 @@
 
       <div class="task-section" id="task-section">${_ldTaskListHTML()}</div>
       <div class="leader-footer" id="leader-footer">${_ldFooterHTML()}</div>
+      ` : `<div id="ticket-i24-leader-root"></div>`}
     </div>`;
     _ldAttachAll();
   }
@@ -810,6 +830,19 @@
       await apiLogout();
       setState({currentUser:null,taskProgress:{},currentTurno:'T1'});
     });
+    _ldContainer.querySelectorAll('.leader-nav-tab').forEach(tab=>{
+      tab.addEventListener('click', ()=>{
+        if(tab.dataset.ltab !== _ldActiveTab) {
+          _ldActiveTab = tab.dataset.ltab;
+          _ldRenderAll();
+        }
+      });
+    });
+    if(_ldActiveTab === 'tickets') {
+      const troot = _ldContainer.querySelector('#ticket-i24-leader-root');
+      if(troot) mountTicketI24Form(troot);
+      return;
+    }
     _ldContainer.querySelectorAll('.turno-tab').forEach(tab=>{
       tab.addEventListener('click',()=>{if(tab.dataset.turno!==getState().currentTurno)setState({currentTurno:tab.dataset.turno});});
     });
@@ -838,6 +871,265 @@
   }
 
   // ============================================================
+  // TICKET I24 FORM (VISTA LÍDER)
+  // ============================================================
+  let _tkContainer = null, _tkBranch = '', _tkDate = todayKey(), _tkNoTickets = false, _tkNote = false, _tkNoteText = '';
+  let _tkTurnos = {
+    t1: { reportado: '', justificado: '', faltante: 0 },
+    t2: { reportado: '', justificado: '', faltante: 0 },
+    t3: { reportado: '', justificado: '', faltante: 0 }
+  };
+  let _tkSubmitState = 'idle';
+
+  async function mountTicketI24Form(el){
+    _tkContainer = el;
+    _tkDate = todayKey();
+    const { currentUser } = getState();
+    const branches = currentUser?.branches || [];
+    if(!_tkBranch && branches.length) _tkBranch = branches[0];
+    await _tkLoadCurrent();
+  }
+
+  async function _tkLoadCurrent(){
+    if(!_tkContainer) return;
+    const { currentUser } = getState();
+    const branches = currentUser?.branches || [];
+    if(!branches.length){
+      _tkContainer.innerHTML = `<div style="padding:40px;text-align:center;"><span style="color:var(--text-muted);font-size:32px;">🏢</span><p style="margin-top:12px;font-weight:700;color:var(--text-muted);">No tienes sucursales asignadas</p></div>`;
+      return;
+    }
+    if(!_tkBranch && branches.length) _tkBranch = branches[0];
+
+    _tkContainer.innerHTML = `<div style="padding:40px;text-align:center"><div class="spinner" style="margin:0 auto;border-color:var(--color-primary);border-bottom-color:transparent;"></div></div>`;
+    
+    const tickets = await apiFetchTickets(_tkDate);
+    const found = tickets.find(t => t.sucursal === _tkBranch);
+    if(found){
+      _tkNoTickets = !found.tiene_tickets;
+      _tkTurnos = {
+        t1: { reportado: found.t1?.reportado||0, justificado: found.t1?.justificado||0, faltante: found.t1?.faltante||0 },
+        t2: { reportado: found.t2?.reportado||0, justificado: found.t2?.justificado||0, faltante: found.t2?.faltante||0 },
+        t3: { reportado: found.t3?.reportado||0, justificado: found.t3?.justificado||0, faltante: found.t3?.faltante||0 }
+      };
+      _tkNote = found.tiene_nota || false;
+      _tkNoteText = found.nota_texto || '';
+    } else {
+      _tkNoTickets = false;
+      _tkTurnos = { t1:{reportado:'',justificado:'',faltante:0}, t2:{reportado:'',justificado:'',faltante:0}, t3:{reportado:'',justificado:'',faltante:0} };
+      _tkNote = false;
+      _tkNoteText = '';
+    }
+    _tkRender();
+  }
+
+  function _tkCalcTurno(tKey){
+    const rep = Number(_tkTurnos[tKey].reportado) || 0;
+    const just = Number(_tkTurnos[tKey].justificado) || 0;
+    _tkTurnos[tKey].faltante = rep - just;
+  }
+
+  function _tkGenerateOutputText(){
+    if(!_tkBranch) return '';
+    const fDate = formatDateLong(parseDateKey(_tkDate));
+    let txt = `🏢 SUCURSAL ${_tkBranch} — ${fDate}\n`;
+    if(_tkNoTickets){
+      txt += `✅ Esta sucursal NO tuvo Tickets i24 hoy.\n`;
+    } else {
+      const fmt = n => `$${Number(n||0).toLocaleString('es-MX')}`;
+      ['t1','t2','t3'].forEach((t, i) => {
+        const d = _tkTurnos[t];
+        txt += `• T${i+1}: reportó ${fmt(d.reportado)} en bitácora de tickets, tengo ${fmt(d.justificado)} justificados, faltante por justificar ${fmt(d.faltante)}\n`;
+      });
+    }
+    if(_tkNote && _tkNoteText.trim()){
+      txt += `📝 Nota: ${_tkNoteText.trim()}`;
+    }
+    return txt.trim();
+  }
+
+  function _tkRender(){
+    if(!_tkContainer) return;
+    const { currentUser } = getState();
+    const branches = currentUser?.branches || [];
+    const fmt = n => `$${Number(n||0).toLocaleString('es-MX')}`;
+    const outText = _tkGenerateOutputText();
+
+    _tkContainer.innerHTML = `
+    <div class="ticket-container">
+      <div class="ticket-header-controls">
+        <div class="ticket-control-group">
+          <label class="ticket-control-label">Sucursal</label>
+          <select id="tk-branch-sel" class="ticket-select">
+            ${branches.map(b => `<option value="${b}"${b === _tkBranch ? ' selected' : ''}>${b}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ticket-control-group">
+          <label class="ticket-control-label">Fecha de Reporte</label>
+          <input type="date" id="tk-date-inp" class="ticket-date-input" value="${_tkDate}" max="${todayKey()}"/>
+        </div>
+      </div>
+
+      <div class="ticket-no-tickets-box${_tkNoTickets ? ' active' : ''}" id="tk-no-tickets-box" role="checkbox" aria-checked="${_tkNoTickets}" tabindex="0">
+        <div class="ticket-checkbox-custom">${icon('check',16)}</div>
+        <span class="ticket-no-tickets-label">Esta sucursal NO tuvo Tickets i24 hoy</span>
+      </div>
+
+      <div class="ticket-turnos-grid${_tkNoTickets ? ' disabled' : ''}">
+        ${['t1','t2','t3'].map((t, idx) => {
+          const d = _tkTurnos[t];
+          const falt = Number(d.faltante) || 0;
+          return `
+          <div class="ticket-turno-card${_tkNoTickets ? ' disabled' : ''}">
+            <div class="ticket-turno-header">
+              <span class="ticket-turno-title">${icon(t==='t1'?'sun':t==='t2'?'moon':'clock', 16)} Turno ${idx+1}</span>
+            </div>
+            <div class="ticket-inputs-row">
+              <div class="ticket-input-field">
+                <label class="ticket-input-label">Reportado en Bitácora</label>
+                <div class="ticket-input-prefix">
+                  <span>$</span>
+                  <input type="number" class="ticket-num-input tk-inp-rep" data-turno="${t}" value="${d.reportado!==''?d.reportado:''}" placeholder="0" min="0" step="any"${_tkNoTickets?' disabled':''}/>
+                </div>
+              </div>
+              <div class="ticket-input-field">
+                <label class="ticket-input-label">Justificado / Comprobado</label>
+                <div class="ticket-input-prefix">
+                  <span>$</span>
+                  <input type="number" class="ticket-num-input tk-inp-just" data-turno="${t}" value="${d.justificado!==''?d.justificado:''}" placeholder="0" min="0" step="any"${_tkNoTickets?' disabled':''}/>
+                </div>
+              </div>
+            </div>
+            <div class="ticket-faltante-row">
+              <span class="ticket-faltante-label">Faltante por justificar:</span>
+              <span class="ticket-faltante-val${falt > 0 ? ' danger' : falt === 0 ? ' success' : ''}" id="tk-falt-${t}">${fmt(falt)}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="ticket-note-section">
+        <div class="ticket-note-toggle">
+          <button type="button" class="ticket-note-btn${!_tkNote ? ' active' : ''}" id="tk-btn-no-note">Sin Nota</button>
+          <button type="button" class="ticket-note-btn${_tkNote ? ' active' : ''}" id="tk-btn-yes-note">Con Nota / Observación</button>
+        </div>
+        ${_tkNote ? `
+          <textarea id="tk-note-txt" class="ticket-note-textarea" placeholder="Escribe aquí cualquier aclaración sobre los montos o tickets...">${_tkNoteText}</textarea>
+        ` : ''}
+      </div>
+
+      <div class="ticket-output-section">
+        <div class="ticket-output-header">
+          <span class="ticket-output-title">Resumen de Reporte (Texto)</span>
+          <button type="button" class="ticket-copy-btn" id="tk-copy-btn">${icon('clipboard',14)} <span>Copiar</span></button>
+        </div>
+        <div class="ticket-output-text" id="tk-out-text">${outText}</div>
+      </div>
+
+      <button id="tk-submit-btn" class="btn btn-full btn-primary" type="button"${_tkSubmitState==='loading'?' disabled':''}>
+        ${_tkSubmitState==='loading' ? `<div class="spinner"></div><span>Guardando...</span>` : `<span class="icon">${icon('checkCircle',18)}</span><span>Guardar Validación Tickets i24</span>`}
+      </button>
+    </div>`;
+    _tkAttachListeners();
+  }
+
+  function _tkAttachListeners(){
+    if(!_tkContainer) return;
+    const sel = _tkContainer.querySelector('#tk-branch-sel');
+    if(sel) sel.addEventListener('change', e => { _tkBranch = e.target.value; _tkLoadCurrent(); });
+    
+    const dt = _tkContainer.querySelector('#tk-date-inp');
+    if(dt) dt.addEventListener('change', e => { _tkDate = e.target.value || todayKey(); _tkLoadCurrent(); });
+
+    const box = _tkContainer.querySelector('#tk-no-tickets-box');
+    if(box){
+      const toggleBox = () => {
+        _tkNoTickets = !_tkNoTickets;
+        if(_tkNoTickets){
+          ['t1','t2','t3'].forEach(t => { _tkTurnos[t] = { reportado: 0, justificado: 0, faltante: 0 }; });
+        }
+        _tkRender();
+      };
+      box.addEventListener('click', toggleBox);
+      box.addEventListener('keydown', e => { if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggleBox(); } });
+    }
+
+    _tkContainer.querySelectorAll('.tk-inp-rep').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const t = e.target.dataset.turno;
+        _tkTurnos[t].reportado = e.target.value;
+        _tkCalcTurno(t);
+        const el = _tkContainer.querySelector(`#tk-falt-${t}`);
+        if(el) {
+          const falt = _tkTurnos[t].faltante;
+          el.textContent = `$${Number(falt||0).toLocaleString('es-MX')}`;
+          el.className = `ticket-faltante-val${falt > 0 ? ' danger' : falt === 0 ? ' success' : ''}`;
+        }
+        const out = _tkContainer.querySelector('#tk-out-text');
+        if(out) out.textContent = _tkGenerateOutputText();
+      });
+    });
+
+    _tkContainer.querySelectorAll('.tk-inp-just').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const t = e.target.dataset.turno;
+        _tkTurnos[t].justificado = e.target.value;
+        _tkCalcTurno(t);
+        const el = _tkContainer.querySelector(`#tk-falt-${t}`);
+        if(el) {
+          const falt = _tkTurnos[t].faltante;
+          el.textContent = `$${Number(falt||0).toLocaleString('es-MX')}`;
+          el.className = `ticket-faltante-val${falt > 0 ? ' danger' : falt === 0 ? ' success' : ''}`;
+        }
+        const out = _tkContainer.querySelector('#tk-out-text');
+        if(out) out.textContent = _tkGenerateOutputText();
+      });
+    });
+
+    _tkContainer.querySelector('#tk-btn-no-note')?.addEventListener('click', () => { _tkNote = false; _tkRender(); });
+    _tkContainer.querySelector('#tk-btn-yes-note')?.addEventListener('click', () => { _tkNote = true; _tkRender(); });
+    
+    const txt = _tkContainer.querySelector('#tk-note-txt');
+    if(txt) txt.addEventListener('input', e => {
+      _tkNoteText = e.target.value;
+      const out = _tkContainer.querySelector('#tk-out-text');
+      if(out) out.textContent = _tkGenerateOutputText();
+    });
+
+    _tkContainer.querySelector('#tk-copy-btn')?.addEventListener('click', () => {
+      const t = _tkGenerateOutputText();
+      navigator.clipboard?.writeText(t).then(() => showToast('Texto copiado al portapapeles', 'success', 2500)).catch(() => showToast('No se pudo copiar', 'warning'));
+    });
+
+    _tkContainer.querySelector('#tk-submit-btn')?.addEventListener('click', async () => {
+      if(_tkSubmitState === 'loading') return;
+      _tkSubmitState = 'loading';
+      const btn = _tkContainer.querySelector('#tk-submit-btn');
+      if(btn) { btn.disabled = true; btn.innerHTML = `<div class="spinner"></div><span>Guardando...</span>`; }
+
+      const payload = {
+        dateKey: _tkDate,
+        sucursal: _tkBranch,
+        tiene_tickets: !_tkNoTickets,
+        t1: _tkTurnos.t1,
+        t2: _tkTurnos.t2,
+        t3: _tkTurnos.t3,
+        tiene_nota: _tkNote,
+        nota_texto: _tkNoteText
+      };
+
+      const res = await apiSubmitTicket(payload);
+      _tkSubmitState = 'idle';
+      if(res.success){
+        showToast(`¡Validación de Tickets i24 guardada para ${_tkBranch}!`, 'success', 4000);
+        _tkLoadCurrent();
+      } else {
+        showToast(res.error || 'Error al guardar validación', 'danger');
+        _tkRender();
+      }
+    });
+  }
+
+  // ============================================================
   // ADMIN DASHBOARD
   // ============================================================
   let _adContainer=null,_adReports=[],_adLoading=true,_adDateKey=todayKey(),_adActiveTab='reports';
@@ -852,6 +1144,7 @@
     if(!silent){_adLoading=true;_adRenderMatrix();}
     _adReports=await apiFetchReports(_adDateKey);
     _adLoading=false;_adRenderMatrix();_adRenderStats();
+    if(_adActiveTab === 'tickets') _tkAdminLoad();
     if(silent)showToast('Datos actualizados','info',2000);
   }
 
@@ -885,6 +1178,9 @@
         <button class="admin-tab-btn${_adActiveTab==='leaders'?' active':''}" data-tab="leaders" type="button">
           ${icon('users',16)}<span>Líderes</span>
         </button>
+        <button class="admin-tab-btn${_adActiveTab==='tickets'?' active':''}" data-tab="tickets" type="button">
+          ${icon('ticket',16)}<span>Tickets i24</span>
+        </button>
       </div>
 
       <!-- Tab: Reports -->
@@ -909,6 +1205,11 @@
           </div>
           <div id="leaders-list"></div>
         </div>
+      </div>
+
+      <!-- Tab: Tickets i24 -->
+      <div class="admin-tab-panel${_adActiveTab==='tickets'?' active':''}" id="tab-tickets">
+        <div id="ticket-i24-admin-root"></div>
       </div>
     </div>
     <div id="modal-container"></div>`;
@@ -1018,10 +1319,80 @@
         _adContainer.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===_adActiveTab));
         _adContainer.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${_adActiveTab}`));
         if(_adActiveTab==='leaders')_adRefreshLeaderList();
+        if(_adActiveTab==='tickets')_tkAdminLoad();
       });
     });
     _adAttachLeaderListListeners();
     _adContainer?.querySelector('#add-leader-btn')?.addEventListener('click',()=>_adOpenLeaderForm());
+  }
+
+  async function _tkAdminLoad(){
+    const root = _adContainer?.querySelector('#ticket-i24-admin-root');
+    if(!root) return;
+    root.innerHTML = `<div style="padding:40px;text-align:center;"><div class="spinner" style="margin:0 auto;border-color:var(--color-primary);border-bottom-color:transparent;"></div></div>`;
+    const [users, tickets] = await Promise.all([
+      apiGetUsers(),
+      apiFetchTickets(_adDateKey)
+    ]);
+    _tkAdminRender(root, users.filter(u => u.role === 'leader'), tickets);
+  }
+
+  function _tkAdminRender(root, leaders, tickets){
+    if(!root) return;
+    let totalMissing = 0;
+    tickets.forEach(t => {
+      if(t.tiene_tickets){
+        totalMissing += (t.t1?.faltante||0) + (t.t2?.faltante||0) + (t.t3?.faltante||0);
+      }
+    });
+    const fmt = n => `$${Number(n||0).toLocaleString('es-MX')}`;
+
+    root.innerHTML = `
+    <div style="padding: var(--space-4) var(--space-4) var(--space-12); max-width: 900px; margin: 0 auto;">
+      <div class="ticket-admin-kpi">
+        <div class="ticket-kpi-info">
+          <span class="ticket-kpi-label">Faltante Total Acumulado (${formatDateLong(parseDateKey(_adDateKey))})</span>
+          <span class="ticket-kpi-value">${fmt(totalMissing)}</span>
+        </div>
+        <div style="opacity: 0.2; transform: scale(2);">${icon('dollar', 32, '#ffffff')}</div>
+      </div>
+
+      ${leaders.map(u => {
+        const branches = u.branches || [];
+        if(!branches.length) return '';
+        return `
+        <div class="ticket-admin-leader-group">
+          <div class="ticket-admin-leader-header">
+            ${icon('user', 16)} <span>${u.name}</span> <span style="font-size:11px;font-weight:600;color:var(--text-disabled);">(${branches.length} sucursales)</span>
+          </div>
+          <div class="ticket-branch-cards-grid">
+            ${branches.map(b => {
+              const t = tickets.find(x => x.sucursal === b);
+              let badgeClass = 'pendiente', badgeText = 'Pendiente', details = 'Sin registro el día de hoy';
+              if(t){
+                if(!t.tiene_tickets){
+                  badgeClass = 'sin-tickets'; badgeText = 'Sin Tickets i24'; details = 'Reportó <strong>$0</strong> en tickets';
+                } else {
+                  badgeClass = 'registrado'; badgeText = 'Registrado';
+                  const f1 = t.t1?.faltante||0, f2 = t.t2?.faltante||0, f3 = t.t3?.faltante||0;
+                  const totF = f1 + f2 + f3;
+                  details = `T1: ${fmt(t.t1?.reportado)} | T2: ${fmt(t.t2?.reportado)} | T3: ${fmt(t.t3?.reportado)}<br/>Faltante total: <strong style="color:${totF>0?'var(--color-danger)':'var(--color-success)'}">${fmt(totF)}</strong>`;
+                  if(t.tiene_nota && t.nota_texto) details += `<br/><em>📝 "${t.nota_texto}"</em>`;
+                }
+              }
+              return `
+              <div class="ticket-branch-card">
+                <div class="ticket-branch-card-top">
+                  <span class="ticket-branch-name">🏢 ${b}</span>
+                  <span class="ticket-branch-badge ${badgeClass}">${badgeText}</span>
+                </div>
+                <div class="ticket-branch-details">${details}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }
 
   function _adAttachLeaderListListeners(){
