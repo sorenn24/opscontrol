@@ -142,6 +142,8 @@
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 .ticket-turno-title {
   font-size: var(--font-size-base);
@@ -165,6 +167,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 .ticket-turno-toggle-btn:hover {
   border-color: var(--text-primary);
@@ -243,6 +246,8 @@
   padding: var(--space-3) var(--space-4);
   background: var(--bg-surface-2);
   border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .ticket-faltante-label {
   font-size: var(--font-size-xs);
@@ -274,10 +279,12 @@
   display: flex;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
+  flex-wrap: wrap;
 }
 .ticket-note-btn {
   flex: 1;
   min-height: 40px;
+  min-width: 140px;
   border: 2px solid var(--border-default);
   background: var(--bg-surface-2);
   border-radius: var(--radius-md);
@@ -324,6 +331,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .ticket-output-title {
   font-size: var(--font-size-xs);
@@ -336,7 +345,7 @@
   background: none;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
@@ -370,6 +379,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
 }
 .ticket-kpi-info {
   display: flex;
@@ -429,6 +440,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-3);
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .ticket-branch-name {
   font-size: var(--font-size-base);
@@ -463,6 +476,7 @@
   line-height: 1.6;
   border-top: 1px solid var(--border-subtle);
   padding-top: var(--space-2);
+  word-break: break-word;
 }
 .ticket-branch-details strong {
   color: var(--text-primary);
@@ -471,14 +485,20 @@
 /* Tabs de navegación en Leader Dashboard */
 .leader-nav-tabs {
   display: flex;
+  overflow-x: auto;
   border-bottom: 2px solid var(--border-subtle);
   margin-bottom: var(--space-5);
   background: var(--bg-surface);
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-2);
+  scrollbar-width: none;
+}
+.leader-nav-tabs::-webkit-scrollbar {
+  display: none;
 }
 .leader-nav-tab {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   font-size: var(--font-size-sm);
@@ -490,6 +510,8 @@
   margin-bottom: -2px;
   cursor: pointer;
   transition: all var(--transition-base);
+  flex: 1;
+  white-space: nowrap;
 }
 .leader-nav-tab:hover {
   color: var(--text-primary);
@@ -498,3 +520,21 @@
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);
 }
+
+/* ── Media Queries Responsive para Móvil (Pantallas Pequeñas < 480px) ── */
+@media (max-width: 480px) {
+  .ticket-inputs-row {
+    grid-template-columns: 1fr;
+  }
+  .leader-nav-tab {
+    padding: var(--space-3) var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+  .ticket-kpi-value {
+    font-size: 26px;
+  }
+  .ticket-turno-card {
+    padding: var(--space-4);
+  }
+}
+
