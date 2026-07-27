@@ -875,9 +875,9 @@
   // ============================================================
   let _tkContainer = null, _tkBranch = '', _tkDate = todayKey(), _tkNoTickets = false, _tkNote = false, _tkNoteText = '';
   let _tkTurnos = {
-    t1: { reportado: '', justificado: '', faltante: 0 },
-    t2: { reportado: '', justificado: '', faltante: 0 },
-    t3: { reportado: '', justificado: '', faltante: 0 }
+    t1: { reportado: '', justificado: '', faltante: 0, sinTickets: false },
+    t2: { reportado: '', justificado: '', faltante: 0, sinTickets: false },
+    t3: { reportado: '', justificado: '', faltante: 0, sinTickets: false }
   };
   let _tkSubmitState = 'idle';
 
@@ -907,15 +907,15 @@
     if(found){
       _tkNoTickets = !found.tiene_tickets;
       _tkTurnos = {
-        t1: { reportado: found.t1?.reportado||0, justificado: found.t1?.justificado||0, faltante: found.t1?.faltante||0 },
-        t2: { reportado: found.t2?.reportado||0, justificado: found.t2?.justificado||0, faltante: found.t2?.faltante||0 },
-        t3: { reportado: found.t3?.reportado||0, justificado: found.t3?.justificado||0, faltante: found.t3?.faltante||0 }
+        t1: { reportado: found.t1?.reportado||0, justificado: found.t1?.justificado||0, faltante: found.t1?.faltante||0, sinTickets: (found.t1?.reportado===0 && found.t1?.justificado===0) },
+        t2: { reportado: found.t2?.reportado||0, justificado: found.t2?.justificado||0, faltante: found.t2?.faltante||0, sinTickets: (found.t2?.reportado===0 && found.t2?.justificado===0) },
+        t3: { reportado: found.t3?.reportado||0, justificado: found.t3?.justificado||0, faltante: found.t3?.faltante||0, sinTickets: (found.t3?.reportado===0 && found.t3?.justificado===0) }
       };
       _tkNote = found.tiene_nota || false;
       _tkNoteText = found.nota_texto || '';
     } else {
       _tkNoTickets = false;
-      _tkTurnos = { t1:{reportado:'',justificado:'',faltante:0}, t2:{reportado:'',justificado:'',faltante:0}, t3:{reportado:'',justificado:'',faltante:0} };
+      _tkTurnos = { t1:{reportado:'',justificado:'',faltante:0,sinTickets:false}, t2:{reportado:'',justificado:'',faltante:0,sinTickets:false}, t3:{reportado:'',justificado:'',faltante:0,sinTickets:false} };
       _tkNote = false;
       _tkNoteText = '';
     }
@@ -938,7 +938,13 @@
       const fmt = n => `$${Number(n||0).toLocaleString('es-MX')}`;
       ['t1','t2','t3'].forEach((t, i) => {
         const d = _tkTurnos[t];
-        txt += `• T${i+1}: reportó ${fmt(d.reportado)} en bitácora de tickets, tengo ${fmt(d.justificado)} justificados, faltante por justificar ${fmt(d.faltante)}\n`;
+        const rep = Number(d.reportado) || 0;
+        const just = Number(d.justificado) || 0;
+        if(d.sinTickets || (rep === 0 && just === 0 && (d.reportado === '' || d.reportado === 0 || d.reportado === '0'))){
+          txt += `• T${i+1}: Sin tickets ($0)\n`;
+        } else {
+          txt += `• T${i+1}: reportó ${fmt(rep)} en bitácora de tickets, tengo ${fmt(just)} justificados, faltante por justificar ${fmt(d.faltante)}\n`;
+        }
       });
     }
     if(_tkNote && _tkNoteText.trim()){
@@ -982,7 +988,14 @@
           <div class="ticket-turno-card${_tkNoTickets ? ' disabled' : ''}">
             <div class="ticket-turno-header">
               <span class="ticket-turno-title">${icon(t==='t1'?'sun':t==='t2'?'moon':'clock', 16)} Turno ${idx+1}</span>
+              <button type="button" class="ticket-turno-toggle-btn${d.sinTickets ? ' active' : ''}" data-turno="${t}"${_tkNoTickets ? ' disabled' : ''}>
+                ${d.sinTickets ? `${icon('check',14)} 0 Tickets` : `⚡ Marcar 0 Tickets`}
+              </button>
             </div>
+            ${d.sinTickets ? `
+            <div class="ticket-turno-zero-box">
+              ✅ Turno registrado sin movimientos / $0 Tickets
+            </div>` : `
             <div class="ticket-inputs-row">
               <div class="ticket-input-field">
                 <label class="ticket-input-label">Reportado en Bitácora</label>
@@ -1002,7 +1015,7 @@
             <div class="ticket-faltante-row">
               <span class="ticket-faltante-label">Faltante por justificar:</span>
               <span class="ticket-faltante-val${falt > 0 ? ' danger' : falt === 0 ? ' success' : ''}" id="tk-falt-${t}">${fmt(falt)}</span>
-            </div>
+            </div>`}
           </div>`;
         }).join('')}
       </div>
@@ -1045,13 +1058,32 @@
       const toggleBox = () => {
         _tkNoTickets = !_tkNoTickets;
         if(_tkNoTickets){
-          ['t1','t2','t3'].forEach(t => { _tkTurnos[t] = { reportado: 0, justificado: 0, faltante: 0 }; });
+          ['t1','t2','t3'].forEach(t => { _tkTurnos[t] = { reportado: 0, justificado: 0, faltante: 0, sinTickets: true }; });
+        } else {
+          ['t1','t2','t3'].forEach(t => { _tkTurnos[t].sinTickets = false; });
         }
         _tkRender();
       };
       box.addEventListener('click', toggleBox);
       box.addEventListener('keydown', e => { if(e.key===' '||e.key==='Enter'){ e.preventDefault(); toggleBox(); } });
     }
+
+    _tkContainer.querySelectorAll('.ticket-turno-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.turno;
+        _tkTurnos[t].sinTickets = !_tkTurnos[t].sinTickets;
+        if(_tkTurnos[t].sinTickets){
+          _tkTurnos[t].reportado = 0;
+          _tkTurnos[t].justificado = 0;
+          _tkTurnos[t].faltante = 0;
+        } else {
+          _tkTurnos[t].reportado = '';
+          _tkTurnos[t].justificado = '';
+          _tkTurnos[t].faltante = 0;
+        }
+        _tkRender();
+      });
+    });
 
     _tkContainer.querySelectorAll('.tk-inp-rep').forEach(inp => {
       inp.addEventListener('input', e => {
@@ -1110,9 +1142,9 @@
         dateKey: _tkDate,
         sucursal: _tkBranch,
         tiene_tickets: !_tkNoTickets,
-        t1: _tkTurnos.t1,
-        t2: _tkTurnos.t2,
-        t3: _tkTurnos.t3,
+        t1: { reportado: Number(_tkTurnos.t1.reportado)||0, justificado: Number(_tkTurnos.t1.justificado)||0, faltante: Number(_tkTurnos.t1.faltante)||0 },
+        t2: { reportado: Number(_tkTurnos.t2.reportado)||0, justificado: Number(_tkTurnos.t2.justificado)||0, faltante: Number(_tkTurnos.t2.faltante)||0 },
+        t3: { reportado: Number(_tkTurnos.t3.reportado)||0, justificado: Number(_tkTurnos.t3.justificado)||0, faltante: Number(_tkTurnos.t3.faltante)||0 },
         tiene_nota: _tkNote,
         nota_texto: _tkNoteText
       };

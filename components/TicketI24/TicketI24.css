@@ -152,6 +152,41 @@
   gap: var(--space-2);
 }
 
+.ticket-turno-toggle-btn {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ticket-turno-toggle-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+.ticket-turno-toggle-btn.active {
+  background: var(--color-success-subtle);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+.ticket-turno-zero-box {
+  padding: var(--space-5);
+  text-align: center;
+  background: var(--color-success-subtle);
+  border: 1px dashed var(--color-success);
+  border-radius: var(--radius-md);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: var(--space-2);
+}
+
 .ticket-inputs-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
