@@ -20,6 +20,8 @@ const authRouter    = require('./routes/auth');
 const usersRouter   = require('./routes/users');
 const reportsRouter = require('./routes/reports');
 const ticketsRouter = require('./routes/tickets');
+const empleadosRouter = require('./routes/empleados');
+const horariosRouter = require('./routes/horarios');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -64,6 +66,8 @@ app.use('/api/auth',    authRouter);
 app.use('/api/users',   usersRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/tickets', ticketsRouter);
+app.use('/api/empleados', empleadosRouter);
+app.use('/api/horarios', horariosRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -108,8 +112,35 @@ async function syncLeaderBranches() {
   console.log('✅ Sucursales y usuarios oficiales sincronizados correctamente');
 }
 
+async function syncInitialEmployees() {
+  const Empleado = require('./models/Empleado');
+  const employees = [
+    { nombre: 'JESY', sucursal_origen: 'ORD' },
+    { nombre: 'HUGO', sucursal_origen: 'ORD' },
+    { nombre: 'HECTOR', sucursal_origen: 'ORD' },
+    { nombre: 'SU', sucursal_origen: 'ORD' },
+    { nombre: 'JESUS', sucursal_origen: 'ORD' },
+    { nombre: 'IANCO', sucursal_origen: 'ORD' },
+    { nombre: 'SOREN', sucursal_origen: 'ORD' },
+    { nombre: 'NESTOR', sucursal_origen: 'CUA' },
+    { nombre: 'ANDRIK', sucursal_origen: 'CUA' },
+    { nombre: 'RAMSES', sucursal_origen: 'CUA' },
+    { nombre: 'ALEJANDRO', sucursal_origen: 'CUA' }
+  ];
+
+  console.log('🔄 Sincronizando empleados iniciales...');
+  for (const emp of employees) {
+    await Empleado.findOneAndUpdate(
+      { nombre: emp.nombre, sucursal_origen: emp.sucursal_origen },
+      { $setOnInsert: { activo: true } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
+  console.log('✅ Empleados iniciales sincronizados correctamente');
+}
+
 mongoose.connection.once('open', () => {
-  syncLeaderBranches().catch(console.error);
+  syncLeaderBranches().then(() => syncInitialEmployees()).catch(console.error);
 });
 
 // ── Arrancar servidor ─────────────────────────────────────────

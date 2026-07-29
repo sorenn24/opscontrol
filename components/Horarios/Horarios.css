@@ -1,0 +1,587 @@
+/* ============================================================
+   HORARIOS.CSS — Módulo Gestor de Horarios Dinámico
+   Mobile-First, paleta Blanco & Rojo + resalte amarillo cubrimiento
+   ============================================================ */
+
+/* ── Contenedor Principal ── */
+.horario-container {
+  padding: var(--space-4);
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: fadeIn 300ms ease both;
+}
+
+/* ── Barra de Semana (Navegación) ── */
+.horario-week-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+.horario-week-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--border-default);
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.horario-week-nav-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+}
+.horario-week-info {
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+}
+.horario-week-label {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.horario-week-dates {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* ── Toolbar (Gestión de Personal + Guardar) ── */
+.horario-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+.horario-mgmt-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.horario-mgmt-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Sección por Sucursal ── */
+.horario-sucursal-section {
+  margin-bottom: var(--space-8);
+}
+.horario-sucursal-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+.horario-sucursal-title {
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+  color: var(--text-primary);
+}
+.horario-badge-updated {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+.horario-badge-pending {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-3);
+  color: var(--text-muted);
+}
+.horario-save-suc-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.horario-save-suc-btn:hover {
+  background: var(--color-primary-dim);
+}
+
+/* ── Tabla de Horario ── */
+.horario-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+  scrollbar-width: thin;
+}
+.horario-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.horario-table th {
+  background: var(--bg-surface-2);
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--border-default);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.horario-table th .th-date {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+.horario-table td {
+  vertical-align: top;
+  padding: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  min-height: 80px;
+  background: var(--bg-surface);
+  transition: background var(--transition-fast);
+}
+.horario-table td.drop-target-active {
+  background: hsla(210, 100%, 50%, 0.08);
+  border: 2px dashed var(--color-primary);
+}
+
+/* ── Celdas de Empleado ── */
+.horario-emp-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+.horario-emp-chip:hover {
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+.horario-emp-chip:active {
+  cursor: grabbing;
+}
+.horario-emp-chip.dragging {
+  opacity: 0.4;
+  border: 2px dashed var(--color-primary);
+}
+.horario-emp-chip.selected {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-subtle);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+/* ── Cubrimiento Inter-Sucursal (Amarillo) ── */
+.horario-emp-chip.cubrimiento {
+  background: hsl(48, 100%, 85%);
+  border-color: hsl(43, 90%, 55%);
+  color: hsl(35, 80%, 20%);
+}
+.horario-emp-chip.cubrimiento .emp-origin-tag {
+  font-size: 10px;
+  font-weight: 800;
+  color: hsl(35, 80%, 35%);
+  margin-left: 2px;
+}
+
+/* ── Botón Agregar Empleado a Día ── */
+.horario-add-to-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px;
+  margin-top: 4px;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-disabled);
+  font-size: 18px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.horario-add-to-day:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-subtle);
+}
+
+/* ── Botón Eliminar Chip ── */
+.horario-emp-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: #fff;
+  border: 2px solid var(--bg-surface);
+  font-size: 10px;
+  font-weight: 900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+.horario-emp-chip:hover .horario-emp-remove {
+  display: flex;
+}
+
+/* ── Dropdown para Asignar Empleado a Celda (Móvil) ── */
+.horario-assign-dropdown {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border-top: 2px solid var(--border-default);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-5);
+  max-height: 60vh;
+  overflow-y: auto;
+  animation: slideUp 250ms var(--transition-spring) both;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.horario-assign-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.horario-assign-dropdown-title {
+  font-size: var(--font-size-base);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.horario-assign-dropdown-close {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.horario-assign-emp-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.horario-assign-emp-item:hover {
+  background: var(--color-primary-subtle);
+}
+.horario-assign-emp-item .emp-suc-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--bg-surface-3);
+  color: var(--text-muted);
+}
+.horario-assign-emp-item .emp-suc-tag.cross {
+  background: hsl(48, 100%, 85%);
+  color: hsl(35, 80%, 30%);
+}
+.horario-assign-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--bg-overlay);
+}
+
+/* ── Modal Gestión de Personal ── */
+.emp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: fadeIn 200ms ease both;
+}
+.emp-modal {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  animation: scaleIn 250ms var(--transition-spring) both;
+}
+@keyframes scaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.emp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  z-index: 2;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+.emp-modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.emp-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+.emp-modal-close:hover {
+  background: var(--bg-surface-3);
+}
+.emp-modal-body {
+  padding: var(--space-5);
+}
+.emp-group-title {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-3);
+  margin-top: var(--space-4);
+}
+.emp-group-title:first-child {
+  margin-top: 0;
+}
+.emp-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-surface-2);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  transition: all var(--transition-fast);
+}
+.emp-list-item-name {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.emp-list-item-name.inactive {
+  color: var(--text-disabled);
+  text-decoration: line-through;
+}
+.emp-list-action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.emp-list-action-btn:hover {
+  background: var(--bg-surface-3);
+  color: var(--text-primary);
+}
+.emp-list-action-btn.danger:hover {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+.emp-add-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+.emp-add-input {
+  flex: 1;
+  min-width: 120px;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+  text-transform: uppercase;
+}
+.emp-add-input:focus {
+  border-color: var(--color-primary);
+}
+.emp-add-select {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+}
+.emp-add-btn {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background var(--transition-fast);
+}
+.emp-add-btn:hover {
+  background: var(--color-primary-dim);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .horario-container {
+    padding: var(--space-3);
+  }
+  .horario-week-bar {
+    padding: var(--space-3);
+  }
+  .horario-week-label {
+    font-size: var(--font-size-sm);
+  }
+  .horario-table th {
+    padding: var(--space-2) 4px;
+    font-size: 10px;
+  }
+  .horario-emp-chip {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+  .horario-sucursal-title {
+    font-size: var(--font-size-base);
+  }
+}
+
+/* ── Admin Read-Only Mode ── */
+.horario-readonly .horario-emp-chip {
+  cursor: default;
+}
+.horario-readonly .horario-emp-chip:hover {
+  box-shadow: none;
+}
+.horario-readonly .horario-emp-remove {
+  display: none !important;
+}
+.horario-readonly .horario-add-to-day {
+  display: none;
+}
+.horario-readonly .horario-save-suc-btn {
+  display: none;
+}
+.horario-readonly .horario-toolbar {
+  display: none;
+}

@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="components/LeaderDashboard/LeaderDashboard.css" />
   <link rel="stylesheet" href="components/AdminDashboard/AdminDashboard.css" />
   <link rel="stylesheet" href="components/TicketI24/TicketI24.css" />
+  <link rel="stylesheet" href="components/Horarios/Horarios.css" />
 
   <style>
   /* ── SVG Icon utility ──────────────────────────────── */
@@ -548,6 +549,28 @@
     return _apiFetch('/tickets', {method:'POST', body: JSON.stringify(payload)});
   }
 
+  // Horarios & Empleados API
+  async function apiFetchEmpleados(sucursal){
+    const data = await _apiFetch(`/empleados${sucursal?'?sucursal='+sucursal:''}`);
+    return data.empleados || [];
+  }
+  async function apiCreateEmpleado(payload){
+    return _apiFetch('/empleados', {method:'POST', body: JSON.stringify(payload)});
+  }
+  async function apiUpdateEmpleado(id, payload){
+    return _apiFetch(`/empleados/${id}`, {method:'PUT', body: JSON.stringify(payload)});
+  }
+  async function apiDeleteEmpleado(id){
+    return _apiFetch(`/empleados/${id}`, {method:'DELETE'});
+  }
+  async function apiFetchHorario(weekKey, sucursal){
+    const data = await _apiFetch(`/horarios?week=${weekKey}&sucursal=${sucursal}`);
+    return data.horario || null;
+  }
+  async function apiSaveHorario(payload){
+    return _apiFetch('/horarios', {method:'POST', body: JSON.stringify(payload)});
+  }
+
   // Offline draft helpers (localStorage fallback)
   const DRAFT_KEY='opscontrol:drafts';
   function saveDraft(r){try{const ds=JSON.parse(localStorage.getItem(DRAFT_KEY)||'[]');const i=ds.findIndex(d=>d.turno===r.turno&&d.dateKey===r.dateKey);if(i>=0)ds[i]=r;else ds.push(r);localStorage.setItem(DRAFT_KEY,JSON.stringify(ds));}catch{}}
@@ -741,8 +764,12 @@
           ${icon('checkCircle',16)}<span>Bitácora Operativa</span>
         </button>
         <button class="leader-nav-tab${_ldActiveTab==='tickets'?' active':''}" data-ltab="tickets" type="button">
-          ${icon('ticket',16)}<span>Validación Tickets i24</span>
+          ${icon('ticket',16)}<span>Tickets i24</span>
         </button>
+        ${currentUser?.name === 'Soren' ? `
+        <button class="leader-nav-tab${_ldActiveTab==='horarios'?' active':''}" data-ltab="horarios" type="button">
+          ${icon('calendar',16)}<span>Horarios</span>
+        </button>` : ''}
       </div>
 
       ${_ldActiveTab==='bitacora'?`
@@ -766,7 +793,8 @@
 
       <div class="task-section" id="task-section">${_ldTaskListHTML()}</div>
       <div class="leader-footer" id="leader-footer">${_ldFooterHTML()}</div>
-      ` : `<div id="ticket-i24-leader-root"></div>`}
+      ` : _ldActiveTab==='tickets' ? `<div id="ticket-i24-leader-root"></div>`
+        : `<div id="horarios-leader-root"></div>`}
     </div>`;
     _ldAttachAll();
   }
@@ -841,6 +869,11 @@
     if(_ldActiveTab === 'tickets') {
       const troot = _ldContainer.querySelector('#ticket-i24-leader-root');
       if(troot) mountTicketI24Form(troot);
+      return;
+    }
+    if(_ldActiveTab === 'horarios') {
+      const hroot = _ldContainer.querySelector('#horarios-leader-root');
+      if(hroot) mountHorariosModule(hroot, false);
       return;
     }
     _ldContainer.querySelectorAll('.turno-tab').forEach(tab=>{
@@ -1162,6 +1195,405 @@
   }
 
   // ============================================================
+  // HORARIOS MODULE (GESTOR DE HORARIOS DINÁMICO)
+  // ============================================================
+  const HR_DIAS = ['Viernes','Sabado','Domingo','Lunes','Martes','Miercoles','Jueves'];
+  const HR_SUCURSALES = [{code:'ORD', name:'Manuel Ordoñez'}, {code:'CUA', name:'Cuauhtémoc'}];
+
+  let _hrContainer=null, _hrReadonly=false, _hrWeekOffset=0;
+  let _hrEmpleados=[], _hrHorarios={ORD:null, CUA:null};
+  let _hrSelectedChip=null; // {sucursal, dia, idx} for tap-to-move
+
+  function _hrGetWeekInfo(offset=0){
+    const now=new Date();
+    now.setDate(now.getDate() + (offset*7));
+    // Find the Friday of the current week
+    const day = now.getDay(); // 0=Sun
+    const diffToFri = day >= 5 ? day - 5 : day + 2; // days since last Friday
+    const friday = new Date(now);
+    friday.setDate(now.getDate() - diffToFri);
+
+    const dates=[];
+    for(let i=0;i<7;i++){
+      const d=new Date(friday);
+      d.setDate(friday.getDate()+i);
+      dates.push(d);
+    }
+    const startDay = friday.getDate();
+    const endDay = dates[6].getDate();
+    const iso = friday.toISOString().slice(0,4) + '-W' + String(Math.ceil(((friday - new Date(friday.getFullYear(),0,1))/86400000+1)/7)).padStart(2,'0');
+    return {
+      weekKey: iso,
+      label: `SEMANA ${String(startDay).padStart(2,'0')} AL ${String(endDay).padStart(2,'0')}`,
+      dates,
+      dateKeys: dates.map(d => d.toISOString().slice(0,10))
+    };
+  }
+
+  async function mountHorariosModule(el, readonly=false){
+    _hrContainer=el; _hrReadonly=readonly; _hrSelectedChip=null;
+    _hrContainer.innerHTML=`<div style="padding:40px;text-align:center"><div class="spinner" style="margin:0 auto;border-color:var(--color-primary);border-bottom-color:transparent;"></div></div>`;
+    _hrEmpleados = await apiFetchEmpleados();
+    await _hrLoadWeek();
+  }
+
+  async function _hrLoadWeek(){
+    if(!_hrContainer) return;
+    const wk = _hrGetWeekInfo(_hrWeekOffset);
+    const [hORD, hCUA] = await Promise.all([
+      apiFetchHorario(wk.weekKey, 'ORD'),
+      apiFetchHorario(wk.weekKey, 'CUA')
+    ]);
+    _hrHorarios.ORD = hORD;
+    _hrHorarios.CUA = hCUA;
+    _hrRender();
+  }
+
+  function _hrBuildAsignaciones(suc){
+    const wk = _hrGetWeekInfo(_hrWeekOffset);
+    const existing = _hrHorarios[suc];
+    return HR_DIAS.map((dia, i) => {
+      const fecha = wk.dateKeys[i];
+      if(existing){
+        const found = existing.asignaciones?.find(a => a.dia === dia);
+        if(found) return { dia, fecha, empleados: found.empleados || [] };
+      }
+      return { dia, fecha, empleados: [] };
+    });
+  }
+
+  function _hrRender(){
+    if(!_hrContainer) return;
+    const wk = _hrGetWeekInfo(_hrWeekOffset);
+    const roClass = _hrReadonly ? ' horario-readonly' : '';
+
+    _hrContainer.innerHTML=`
+    <div class="horario-container${roClass}">
+      <div class="horario-week-bar">
+        <button class="horario-week-nav-btn" id="hr-prev-week" type="button">${icon('chevronDown',18)}</button>
+        <div class="horario-week-info">
+          <div class="horario-week-label">${wk.label}</div>
+          <div class="horario-week-dates">${formatDateLong(wk.dates[0])} — ${formatDateLong(wk.dates[6])}</div>
+        </div>
+        <button class="horario-week-nav-btn" id="hr-next-week" type="button" style="transform:rotate(180deg)">${icon('chevronDown',18)}</button>
+      </div>
+
+      <div class="horario-toolbar">
+        <button class="horario-mgmt-btn" id="hr-emp-mgmt-btn" type="button">
+          ${icon('users',16)} <span>Gestión de Personal</span>
+        </button>
+      </div>
+
+      ${HR_SUCURSALES.map(s => {
+        const asig = _hrBuildAsignaciones(s.code);
+        const hasData = _hrHorarios[s.code] != null;
+        return `
+        <div class="horario-sucursal-section" data-suc="${s.code}">
+          <div class="horario-sucursal-header">
+            <span class="horario-sucursal-title">🏢 ${s.name}</span>
+            <span class="${hasData ? 'horario-badge-updated' : 'horario-badge-pending'}">${hasData ? 'ACTUALIZADO' : 'PENDIENTE'}</span>
+            <button class="horario-save-suc-btn" data-suc="${s.code}" type="button">
+              ${icon('check',14)} Guardar ${s.code}
+            </button>
+          </div>
+          <div class="horario-table-wrapper">
+            <table class="horario-table">
+              <thead><tr>
+                ${HR_DIAS.map((dia, i) => {
+                  const d = wk.dates[i];
+                  const dn = d.getDate();
+                  const mn = d.toLocaleDateString('es-MX',{month:'short'});
+                  return `<th>${dia}<span class="th-date">${dn} ${mn}</span></th>`;
+                }).join('')}
+              </tr></thead>
+              <tbody><tr>
+                ${HR_DIAS.map((dia, di) => {
+                  const dayData = asig[di];
+                  return `<td class="horario-day-cell" data-suc="${s.code}" data-dia="${dia}" data-di="${di}">
+                    ${(dayData.empleados||[]).map((emp, ei) => {
+                      const isCub = emp.es_cubrimiento;
+                      return `<div class="horario-emp-chip${isCub ? ' cubrimiento' : ''}" draggable="${!_hrReadonly}" data-suc="${s.code}" data-dia="${dia}" data-idx="${ei}" data-eid="${emp.empleado_id||''}" data-origen="${emp.sucursal_origen||''}">
+                        <span>${emp.nombre}${isCub ? ` <span class="emp-origin-tag">(AT1 ${emp.sucursal_origen})</span>` : ''}</span>
+                        <span class="horario-emp-remove" data-suc="${s.code}" data-dia="${dia}" data-idx="${ei}">×</span>
+                      </div>`;
+                    }).join('')}
+                    ${!_hrReadonly ? `<button class="horario-add-to-day" data-suc="${s.code}" data-dia="${dia}" data-di="${di}" type="button">+</button>` : ''}
+                  </td>`;
+                }).join('')}
+              </tr></tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div id="hr-modal-root"></div>
+    <div id="hr-assign-root"></div>`;
+    _hrAttachListeners();
+  }
+
+  function _hrAttachListeners(){
+    if(!_hrContainer) return;
+    // Week navigation
+    _hrContainer.querySelector('#hr-prev-week')?.addEventListener('click', () => { _hrWeekOffset--; _hrLoadWeek(); });
+    _hrContainer.querySelector('#hr-next-week')?.addEventListener('click', () => { _hrWeekOffset++; _hrLoadWeek(); });
+    // Employee management modal
+    _hrContainer.querySelector('#hr-emp-mgmt-btn')?.addEventListener('click', _hrOpenEmployeeModal);
+    // Save buttons
+    _hrContainer.querySelectorAll('.horario-save-suc-btn').forEach(btn => {
+      btn.addEventListener('click', () => _hrSave(btn.dataset.suc));
+    });
+    if(_hrReadonly) return;
+    // Remove chips
+    _hrContainer.querySelectorAll('.horario-emp-remove').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const {suc, dia, idx} = btn.dataset;
+        const asig = _hrBuildAsignaciones(suc);
+        const dayObj = asig.find(a => a.dia === dia);
+        if(dayObj) {
+          dayObj.empleados.splice(Number(idx), 1);
+          _hrUpdateLocalHorario(suc, asig);
+          _hrRender();
+        }
+      });
+    });
+    // Add-to-day buttons (opens employee picker)
+    _hrContainer.querySelectorAll('.horario-add-to-day').forEach(btn => {
+      btn.addEventListener('click', () => {
+        _hrOpenAssignDropdown(btn.dataset.suc, btn.dataset.dia, Number(btn.dataset.di));
+      });
+    });
+    // Drag & Drop (Desktop)
+    _hrContainer.querySelectorAll('.horario-emp-chip').forEach(chip => {
+      chip.addEventListener('dragstart', e => {
+        chip.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+          suc: chip.dataset.suc, dia: chip.dataset.dia, idx: Number(chip.dataset.idx),
+          eid: chip.dataset.eid, origen: chip.dataset.origen
+        }));
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      // Tap-to-move (Mobile)
+      chip.addEventListener('click', e => {
+        if(window.matchMedia('(hover: none)').matches || window.innerWidth < 768){
+          e.stopPropagation();
+          _hrSelectedChip = { suc: chip.dataset.suc, dia: chip.dataset.dia, idx: Number(chip.dataset.idx) };
+          _hrContainer.querySelectorAll('.horario-emp-chip').forEach(c => c.classList.remove('selected'));
+          chip.classList.add('selected');
+        }
+      });
+    });
+    _hrContainer.querySelectorAll('.horario-day-cell').forEach(cell => {
+      cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drop-target-active'); });
+      cell.addEventListener('dragleave', () => cell.classList.remove('drop-target-active'));
+      cell.addEventListener('drop', e => {
+        e.preventDefault();
+        cell.classList.remove('drop-target-active');
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+          _hrMoveEmployee(data.suc, data.dia, data.idx, cell.dataset.suc, cell.dataset.dia);
+        } catch(err){}
+      });
+      // Tap-to-move destination
+      cell.addEventListener('click', () => {
+        if(_hrSelectedChip){
+          _hrMoveEmployee(_hrSelectedChip.suc, _hrSelectedChip.dia, _hrSelectedChip.idx, cell.dataset.suc, cell.dataset.dia);
+          _hrSelectedChip = null;
+        }
+      });
+    });
+  }
+
+  function _hrMoveEmployee(fromSuc, fromDia, fromIdx, toSuc, toDia){
+    const fromAsig = _hrBuildAsignaciones(fromSuc);
+    const fromDay = fromAsig.find(a => a.dia === fromDia);
+    if(!fromDay || !fromDay.empleados[fromIdx]) return;
+    const emp = { ...fromDay.empleados[fromIdx] };
+    // Remove from source
+    fromDay.empleados.splice(fromIdx, 1);
+    _hrUpdateLocalHorario(fromSuc, fromAsig);
+    // Add to destination
+    const toAsig = fromSuc === toSuc ? fromAsig : _hrBuildAsignaciones(toSuc);
+    const toDay = toAsig.find(a => a.dia === toDia);
+    if(!toDay) return;
+    emp.es_cubrimiento = (emp.sucursal_origen !== toSuc);
+    toDay.empleados.push(emp);
+    _hrUpdateLocalHorario(toSuc, toAsig);
+    _hrRender();
+    showToast(`${emp.nombre} movido a ${toDia} (${toSuc})`, 'info', 2000);
+  }
+
+  function _hrUpdateLocalHorario(suc, asignaciones){
+    const wk = _hrGetWeekInfo(_hrWeekOffset);
+    if(!_hrHorarios[suc]){
+      _hrHorarios[suc] = { weekKey: wk.weekKey, semana_label: wk.label, sucursal: suc, asignaciones };
+    } else {
+      _hrHorarios[suc].asignaciones = asignaciones;
+    }
+  }
+
+  async function _hrSave(suc){
+    const wk = _hrGetWeekInfo(_hrWeekOffset);
+    const asig = _hrBuildAsignaciones(suc);
+    const payload = {
+      weekKey: wk.weekKey,
+      semana_label: wk.label,
+      sucursal: suc,
+      asignaciones: asig
+    };
+    const btn = _hrContainer.querySelector(`.horario-save-suc-btn[data-suc="${suc}"]`);
+    if(btn){ btn.disabled=true; btn.innerHTML=`<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> Guardando...`; }
+    const res = await apiSaveHorario(payload);
+    if(res.success){
+      _hrHorarios[suc] = res.horario || payload;
+      showToast(`Horario de ${suc} guardado correctamente`, 'success', 3000);
+      _hrRender();
+    } else {
+      showToast(res.error || 'Error al guardar horario', 'danger');
+      if(btn){ btn.disabled=false; btn.innerHTML=`${icon('check',14)} Guardar ${suc}`; }
+    }
+  }
+
+  function _hrOpenAssignDropdown(suc, dia, di){
+    const root = _hrContainer.querySelector('#hr-assign-root');
+    if(!root) return;
+    const allEmps = _hrEmpleados.filter(e => e.activo !== false);
+    root.innerHTML=`
+    <div class="horario-assign-overlay" id="hr-assign-overlay"></div>
+    <div class="horario-assign-dropdown">
+      <div class="horario-assign-dropdown-header">
+        <span class="horario-assign-dropdown-title">Asignar a ${dia} — ${suc}</span>
+        <button class="horario-assign-dropdown-close" id="hr-assign-close" type="button">${icon('close',18)}</button>
+      </div>
+      ${allEmps.map(emp => {
+        const isCross = emp.sucursal_origen !== suc;
+        return `<div class="horario-assign-emp-item" data-eid="${emp._id||emp.id}" data-nombre="${emp.nombre}" data-origen="${emp.sucursal_origen}">
+          ${icon('user',14)} <span>${emp.nombre}</span>
+          <span class="emp-suc-tag${isCross ? ' cross' : ''}">${emp.sucursal_origen}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+    root.querySelector('#hr-assign-overlay')?.addEventListener('click', () => { root.innerHTML=''; });
+    root.querySelector('#hr-assign-close')?.addEventListener('click', () => { root.innerHTML=''; });
+    root.querySelectorAll('.horario-assign-emp-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const asig = _hrBuildAsignaciones(suc);
+        const dayObj = asig.find(a => a.dia === dia);
+        if(!dayObj) return;
+        const newEmp = {
+          empleado_id: item.dataset.eid,
+          nombre: item.dataset.nombre,
+          sucursal_origen: item.dataset.origen,
+          es_cubrimiento: item.dataset.origen !== suc
+        };
+        dayObj.empleados.push(newEmp);
+        _hrUpdateLocalHorario(suc, asig);
+        root.innerHTML='';
+        _hrRender();
+      });
+    });
+  }
+
+  async function _hrOpenEmployeeModal(){
+    const modalRoot = _hrContainer.querySelector('#hr-modal-root');
+    if(!modalRoot) return;
+    _hrEmpleados = await apiFetchEmpleados();
+    _hrRenderEmpModal(modalRoot);
+  }
+
+  function _hrRenderEmpModal(modalRoot){
+    const ordEmps = _hrEmpleados.filter(e => e.sucursal_origen === 'ORD');
+    const cuaEmps = _hrEmpleados.filter(e => e.sucursal_origen === 'CUA');
+
+    modalRoot.innerHTML=`
+    <div class="emp-modal-overlay" id="emp-modal-overlay">
+      <div class="emp-modal">
+        <div class="emp-modal-header">
+          <span class="emp-modal-title">👥 Gestión de Personal</span>
+          <button class="emp-modal-close" id="emp-modal-close" type="button">${icon('close',18)}</button>
+        </div>
+        <div class="emp-modal-body">
+          <div class="emp-group-title">🏢 Manuel Ordoñez (ORD)</div>
+          ${ordEmps.map(e => _hrEmpRow(e)).join('')}
+          ${!ordEmps.length ? '<p style="color:var(--text-muted);font-size:13px;padding:8px 0;">Sin empleados registrados</p>' : ''}
+
+          <div class="emp-group-title">🏢 Cuauhtémoc (CUA)</div>
+          ${cuaEmps.map(e => _hrEmpRow(e)).join('')}
+          ${!cuaEmps.length ? '<p style="color:var(--text-muted);font-size:13px;padding:8px 0;">Sin empleados registrados</p>' : ''}
+
+          <div class="emp-add-form">
+            <input type="text" class="emp-add-input" id="emp-add-name" placeholder="Nombre del empleado" maxlength="30"/>
+            <select class="emp-add-select" id="emp-add-suc">
+              <option value="ORD">ORD</option>
+              <option value="CUA">CUA</option>
+            </select>
+            <button class="emp-add-btn" id="emp-add-btn" type="button">${icon('plus',14)} Agregar</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    _hrAttachEmpModalListeners(modalRoot);
+  }
+
+  function _hrEmpRow(e){
+    const inactive = e.activo === false;
+    return `<div class="emp-list-item" data-eid="${e._id||e.id}">
+      <span class="emp-list-item-name${inactive?' inactive':''}">${e.nombre}</span>
+      <span style="font-size:10px;font-weight:700;color:var(--text-disabled);">${e.sucursal_origen}</span>
+      ${!inactive ? `
+        <button class="emp-list-action-btn emp-edit-btn" data-eid="${e._id||e.id}" data-nombre="${e.nombre}" data-suc="${e.sucursal_origen}" type="button">${icon('edit',14)}</button>
+        <button class="emp-list-action-btn danger emp-del-btn" data-eid="${e._id||e.id}" data-nombre="${e.nombre}" type="button">${icon('trash',14)}</button>
+      ` : `<span style="font-size:10px;font-weight:700;color:var(--color-danger);">BAJA</span>`}
+    </div>`;
+  }
+
+  function _hrAttachEmpModalListeners(modalRoot){
+    modalRoot.querySelector('#emp-modal-close')?.addEventListener('click', () => { modalRoot.innerHTML=''; });
+    modalRoot.querySelector('#emp-modal-overlay')?.addEventListener('click', e => {
+      if(e.target.id === 'emp-modal-overlay') modalRoot.innerHTML='';
+    });
+    // Add employee
+    modalRoot.querySelector('#emp-add-btn')?.addEventListener('click', async () => {
+      const nameInp = modalRoot.querySelector('#emp-add-name');
+      const sucSel = modalRoot.querySelector('#emp-add-suc');
+      const nombre = nameInp?.value?.trim().toUpperCase();
+      if(!nombre) { showToast('Ingresa un nombre', 'warning'); return; }
+      const res = await apiCreateEmpleado({ nombre, sucursal_origen: sucSel.value });
+      if(res.success){
+        showToast(`${nombre} agregado a ${sucSel.value}`, 'success');
+        _hrEmpleados = await apiFetchEmpleados();
+        _hrRenderEmpModal(modalRoot);
+      } else { showToast(res.error || 'Error al agregar', 'danger'); }
+    });
+    // Edit employee
+    modalRoot.querySelectorAll('.emp-edit-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const newName = prompt('Nuevo nombre:', btn.dataset.nombre);
+        if(!newName || !newName.trim()) return;
+        const res = await apiUpdateEmpleado(btn.dataset.eid, { nombre: newName.trim().toUpperCase(), sucursal_origen: btn.dataset.suc });
+        if(res.success){
+          showToast('Empleado actualizado', 'success');
+          _hrEmpleados = await apiFetchEmpleados();
+          _hrRenderEmpModal(modalRoot);
+        } else { showToast(res.error || 'Error al editar', 'danger'); }
+      });
+    });
+    // Delete (soft delete) employee
+    modalRoot.querySelectorAll('.emp-del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if(!confirm(`¿Dar de baja a "${btn.dataset.nombre}"? Ya no aparecerá en los horarios nuevos.`)) return;
+        const res = await apiDeleteEmpleado(btn.dataset.eid);
+        if(res.success){
+          showToast(`${btn.dataset.nombre} dado de baja`, 'info');
+          _hrEmpleados = await apiFetchEmpleados();
+          _hrRenderEmpModal(modalRoot);
+        } else { showToast(res.error || 'Error al dar de baja', 'danger'); }
+      });
+    });
+  }
+
+  // ============================================================
   // ADMIN DASHBOARD
   // ============================================================
   let _adContainer=null,_adReports=[],_adLoading=true,_adDateKey=todayKey(),_adActiveTab='reports';
@@ -1213,6 +1645,9 @@
         <button class="admin-tab-btn${_adActiveTab==='tickets'?' active':''}" data-tab="tickets" type="button">
           ${icon('ticket',16)}<span>Tickets i24</span>
         </button>
+        <button class="admin-tab-btn${_adActiveTab==='horarios'?' active':''}" data-tab="horarios" type="button">
+          ${icon('calendar',16)}<span>Horarios</span>
+        </button>
       </div>
 
       <!-- Tab: Reports -->
@@ -1242,6 +1677,11 @@
       <!-- Tab: Tickets i24 -->
       <div class="admin-tab-panel${_adActiveTab==='tickets'?' active':''}" id="tab-tickets">
         <div id="ticket-i24-admin-root"></div>
+      </div>
+
+      <!-- Tab: Horarios (Solo lectura) -->
+      <div class="admin-tab-panel${_adActiveTab==='horarios'?' active':''}" id="tab-horarios">
+        <div id="horarios-admin-root"></div>
       </div>
     </div>
     <div id="modal-container"></div>`;
@@ -1352,6 +1792,10 @@
         _adContainer.querySelectorAll('.admin-tab-panel').forEach(p=>p.classList.toggle('active',p.id===`tab-${_adActiveTab}`));
         if(_adActiveTab==='leaders')_adRefreshLeaderList();
         if(_adActiveTab==='tickets')_tkAdminLoad();
+        if(_adActiveTab==='horarios'){
+          const hroot = _adContainer?.querySelector('#horarios-admin-root');
+          if(hroot) mountHorariosModule(hroot, true);
+        }
       });
     });
     _adAttachLeaderListListeners();
