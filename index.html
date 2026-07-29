@@ -1312,6 +1312,7 @@
           <div class="horario-table-wrapper">
             <table class="horario-table">
               <thead><tr>
+                <th style="width: 40px; text-align: center;"></th>
                 ${HR_DIAS.map((dia, i) => {
                   const d = wk.dates[i];
                   const dn = d.getDate();
@@ -1319,13 +1320,13 @@
                   return `<th>${dia}<span class="th-date">${dn} ${mn}</span></th>`;
                 }).join('')}
               </tr></thead>
-              <tbody><tr>
-                ${HR_DIAS.map((dia, di) => {
-                  const dayData = asig[di];
-                  return `<td class="horario-day-cell" data-suc="${s.code}" data-dia="${dia}" data-di="${di}">
-                    ${['t1','t2','t3'].map(turno => `
-                      <div class="horario-turno-zone" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}">
-                        <div class="horario-turno-label ${turno}">${turno.toUpperCase()}</div>
+              <tbody>
+                ${['t1','t2','t3'].map(turno => `
+                  <tr>
+                    <td class="horario-turno-side-label"><div class="horario-turno-label ${turno}">${turno.toUpperCase()}</div></td>
+                    ${HR_DIAS.map((dia, di) => {
+                      const dayData = asig[di];
+                      return `<td class="horario-turno-zone" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}">
                         ${(dayData[turno]||[]).map((emp, ei) => {
                           const isCub = emp.es_cubrimiento;
                           return `<div class="horario-emp-chip${isCub ? ' cubrimiento' : ''}" draggable="${!_hrReadonly}" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}" data-idx="${ei}" data-eid="${emp.empleado_id||''}" data-origen="${emp.sucursal_origen||''}">
@@ -1334,11 +1335,11 @@
                           </div>`;
                         }).join('')}
                         ${!_hrReadonly ? `<button class="horario-add-to-day" data-suc="${s.code}" data-dia="${dia}" data-di="${di}" data-turno="${turno}" type="button">+</button>` : ''}
-                      </div>
-                    `).join('')}
-                  </td>`;
-                }).join('')}
-              </tr></tbody>
+                      </td>`;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
             </table>
           </div>
         </div>`;

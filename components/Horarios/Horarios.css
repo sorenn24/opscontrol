@@ -245,27 +245,21 @@
   margin-left: 2px;
 }
 
-/* ── Zonas por Turno (T1, T2, T3) ── */
-.horario-turno-zone {
-  min-height: 40px;
-  padding-bottom: var(--space-2);
-  margin-bottom: var(--space-2);
-  border-bottom: 1px dashed var(--border-subtle);
-  transition: background var(--transition-fast);
-}
-.horario-turno-zone:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+/* ── Zonas por Turno (T1, T2, T3) en Filas ── */
+.horario-turno-side-label {
+  vertical-align: middle;
+  text-align: center;
+  background: var(--bg-surface-2);
+  border-right: 1px solid var(--border-default);
+  padding: var(--space-2);
 }
 .horario-turno-label {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   color: var(--text-muted);
   text-align: center;
-  margin-bottom: 4px;
   letter-spacing: 0.05em;
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 4px;
   display: inline-block;
   background: var(--bg-body);
@@ -282,11 +276,17 @@
   background: hsla(0, 70%, 85%, 0.8);
   color: hsla(0, 80%, 30%, 1);
 }
-.horario-turno-zone.drop-target-active {
+td.horario-turno-zone {
+  vertical-align: top;
+  min-height: 40px;
+  padding: var(--space-2);
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+td.horario-turno-zone.drop-target-active {
   background: hsla(210, 100%, 50%, 0.08);
-  border-radius: var(--radius-sm);
-  outline: 2px dashed var(--color-primary);
-  outline-offset: -2px;
+  box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
 /* ── Banco de Empleados ── */
