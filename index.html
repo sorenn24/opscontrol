@@ -340,6 +340,7 @@
     package: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`,
     dollar: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
     ticket: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"/></svg>`,
+    home: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
   };
   function icon(name, size=18, color='currentColor') {
     const svg = ICONS[name];
@@ -1290,12 +1291,24 @@
         return `
         <div class="horario-sucursal-section" data-suc="${s.code}">
           <div class="horario-sucursal-header">
-            <span class="horario-sucursal-title">🏢 ${s.name}</span>
+            <span class="horario-sucursal-title">${icon('home',16)} ${s.name}</span>
             <span class="${hasData ? 'horario-badge-updated' : 'horario-badge-pending'}">${hasData ? 'ACTUALIZADO' : 'PENDIENTE'}</span>
             <button class="horario-save-suc-btn" data-suc="${s.code}" type="button">
               ${icon('check',14)} Guardar ${s.code}
             </button>
           </div>
+          ${!_hrReadonly ? `
+          <div class="horario-bank-container">
+            <div class="horario-bank-title">${icon('users',14)} Empleados Disponibles</div>
+            <div class="horario-bank-list">
+              ${_hrEmpleados.filter(e => e.sucursal_origen === s.code && e.activo !== false).map(emp => `
+                <div class="horario-emp-chip bank-chip" draggable="true" data-suc="${s.code}" data-is-bank="true" data-eid="${emp._id||emp.id}" data-nombre="${emp.nombre}" data-origen="${emp.sucursal_origen}">
+                  <span>${emp.nombre}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          ` : ''}
           <div class="horario-table-wrapper">
             <table class="horario-table">
               <thead><tr>
@@ -1312,7 +1325,7 @@
                   return `<td class="horario-day-cell" data-suc="${s.code}" data-dia="${dia}" data-di="${di}">
                     ${['t1','t2','t3'].map(turno => `
                       <div class="horario-turno-zone" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}">
-                        <div class="horario-turno-label">${turno.toUpperCase()}</div>
+                        <div class="horario-turno-label ${turno}">${turno.toUpperCase()}</div>
                         ${(dayData[turno]||[]).map((emp, ei) => {
                           const isCub = emp.es_cubrimiento;
                           return `<div class="horario-emp-chip${isCub ? ' cubrimiento' : ''}" draggable="${!_hrReadonly}" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}" data-idx="${ei}" data-eid="${emp.empleado_id||''}" data-origen="${emp.sucursal_origen||''}">
@@ -1334,6 +1347,51 @@
     <div id="hr-modal-root"></div>
     <div id="hr-assign-root"></div>`;
     _hrAttachListeners();
+    _hrAttachKeyboardEvents();
+  }
+
+  let _hrClipboard = null;
+  function _hrAttachKeyboardEvents(){
+    if(window._hrKeydownAttached) return;
+    window._hrKeydownAttached = true;
+    document.addEventListener('keydown', e => {
+      if(!_hrContainer || _hrReadonly) return;
+      if(e.ctrlKey || e.metaKey){
+        if(e.key.toLowerCase() === 'c'){
+          const hoveredChip = _hrContainer.querySelector('.horario-emp-chip:hover') || _hrContainer.querySelector('.horario-emp-chip.selected');
+          if(hoveredChip){
+            const nameEl = hoveredChip.querySelector('span');
+            _hrClipboard = {
+              empleado_id: hoveredChip.dataset.eid,
+              nombre: hoveredChip.dataset.nombre || (nameEl ? nameEl.childNodes[0].textContent.trim() : ''),
+              sucursal_origen: hoveredChip.dataset.origen
+            };
+            showToast(`${_hrClipboard.nombre} copiado(a)`, 'info', 1000);
+          }
+        }
+        if(e.key.toLowerCase() === 'v' && _hrClipboard){
+          const hoveredZone = _hrContainer.querySelector('.horario-turno-zone:hover') || _hrContainer.querySelector('.horario-turno-zone.drop-target-active');
+          if(hoveredZone){
+            const suc = hoveredZone.dataset.suc;
+            const dia = hoveredZone.dataset.dia;
+            const turno = hoveredZone.dataset.turno;
+            const asig = _hrBuildAsignaciones(suc);
+            const dayObj = asig.find(a => a.dia === dia);
+            if(dayObj){
+              dayObj[turno].push({
+                empleado_id: _hrClipboard.empleado_id,
+                nombre: _hrClipboard.nombre,
+                sucursal_origen: _hrClipboard.sucursal_origen,
+                es_cubrimiento: _hrClipboard.sucursal_origen !== suc
+              });
+              _hrUpdateLocalHorario(suc, asig);
+              _hrRender();
+              showToast(`${_hrClipboard.nombre} pegado(a) en ${dia} ${turno.toUpperCase()}`, 'success', 1000);
+            }
+          }
+        }
+      }
+    });
   }
 
   function _hrAttachListeners(){
@@ -1372,18 +1430,29 @@
     _hrContainer.querySelectorAll('.horario-emp-chip').forEach(chip => {
       chip.addEventListener('dragstart', e => {
         chip.classList.add('dragging');
+        const nameEl = chip.querySelector('span');
+        const nombre = chip.dataset.nombre || (nameEl ? nameEl.childNodes[0].textContent.trim() : '');
         e.dataTransfer.setData('text/plain', JSON.stringify({
+          isBank: chip.dataset.isBank === 'true',
+          nombre: nombre,
           suc: chip.dataset.suc, dia: chip.dataset.dia, turno: chip.dataset.turno, idx: Number(chip.dataset.idx),
           eid: chip.dataset.eid, origen: chip.dataset.origen
         }));
-        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.effectAllowed = chip.dataset.isBank === 'true' ? 'copy' : 'move';
       });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
       // Tap-to-move (Mobile)
       chip.addEventListener('click', e => {
         if(window.matchMedia('(hover: none)').matches || window.innerWidth < 768){
           e.stopPropagation();
-          _hrSelectedChip = { suc: chip.dataset.suc, dia: chip.dataset.dia, turno: chip.dataset.turno, idx: Number(chip.dataset.idx) };
+          const nameEl = chip.querySelector('span');
+          const nombre = chip.dataset.nombre || (nameEl ? nameEl.childNodes[0].textContent.trim() : '');
+          _hrSelectedChip = { 
+            isBank: chip.dataset.isBank === 'true',
+            nombre: nombre,
+            eid: chip.dataset.eid, origen: chip.dataset.origen,
+            suc: chip.dataset.suc, dia: chip.dataset.dia, turno: chip.dataset.turno, idx: Number(chip.dataset.idx) 
+          };
           _hrContainer.querySelectorAll('.horario-emp-chip').forEach(c => c.classList.remove('selected'));
           chip.classList.add('selected');
         }
@@ -1397,36 +1466,47 @@
         zone.classList.remove('drop-target-active');
         try {
           const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-          _hrMoveEmployee(data.suc, data.dia, data.turno, data.idx, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
+          _hrMoveEmployee(data, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
         } catch(err){}
       });
       // Tap-to-move destination
       zone.addEventListener('click', () => {
         if(_hrSelectedChip){
-          _hrMoveEmployee(_hrSelectedChip.suc, _hrSelectedChip.dia, _hrSelectedChip.turno, _hrSelectedChip.idx, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
+          _hrMoveEmployee(_hrSelectedChip, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
           _hrSelectedChip = null;
         }
       });
     });
   }
 
-  function _hrMoveEmployee(fromSuc, fromDia, fromTurno, fromIdx, toSuc, toDia, toTurno){
-    const fromAsig = _hrBuildAsignaciones(fromSuc);
-    const fromDay = fromAsig.find(a => a.dia === fromDia);
-    if(!fromDay || !fromDay[fromTurno][fromIdx]) return;
-    const emp = { ...fromDay[fromTurno][fromIdx] };
-    // Remove from source
-    fromDay[fromTurno].splice(fromIdx, 1);
-    _hrUpdateLocalHorario(fromSuc, fromAsig);
-    // Add to destination
-    const toAsig = fromSuc === toSuc ? fromAsig : _hrBuildAsignaciones(toSuc);
+  function _hrMoveEmployee(sourceData, toSuc, toDia, toTurno){
+    const toAsig = _hrBuildAsignaciones(toSuc);
     const toDay = toAsig.find(a => a.dia === toDia);
     if(!toDay) return;
-    emp.es_cubrimiento = (emp.sucursal_origen !== toSuc);
+
+    let emp;
+    if(sourceData.isBank){
+      emp = {
+        empleado_id: sourceData.eid,
+        nombre: sourceData.nombre,
+        sucursal_origen: sourceData.origen,
+        es_cubrimiento: sourceData.origen !== toSuc
+      };
+    } else {
+      const fromAsig = (sourceData.suc === toSuc) ? toAsig : _hrBuildAsignaciones(sourceData.suc);
+      const fromDay = fromAsig.find(a => a.dia === sourceData.dia);
+      if(!fromDay || !fromDay[sourceData.turno][sourceData.idx]) return;
+      emp = { ...fromDay[sourceData.turno][sourceData.idx] };
+      // Remove from source
+      fromDay[sourceData.turno].splice(sourceData.idx, 1);
+      if(sourceData.suc !== toSuc) _hrUpdateLocalHorario(sourceData.suc, fromAsig);
+      emp.es_cubrimiento = (emp.sucursal_origen !== toSuc);
+    }
+    
     toDay[toTurno].push(emp);
     _hrUpdateLocalHorario(toSuc, toAsig);
     _hrRender();
-    showToast(`${emp.nombre} movido a ${toDia} ${toTurno.toUpperCase()} (${toSuc})`, 'info', 2000);
+    showToast(`${emp.nombre} agregado a ${toDia} ${toTurno.toUpperCase()}`, 'info', 2000);
   }
 
   function _hrUpdateLocalHorario(suc, asignaciones){
