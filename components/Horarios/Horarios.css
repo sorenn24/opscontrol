@@ -194,10 +194,7 @@
   background: var(--bg-surface);
   transition: background var(--transition-fast);
 }
-.horario-table td.drop-target-active {
-  background: hsla(210, 100%, 50%, 0.08);
-  border: 2px dashed var(--color-primary);
-}
+/* Removed drop-target-active from td */
 
 /* ── Celdas de Empleado ── */
 .horario-emp-chip {
@@ -246,6 +243,34 @@
   font-weight: 800;
   color: hsl(35, 80%, 35%);
   margin-left: 2px;
+}
+
+/* ── Zonas por Turno (T1, T2, T3) ── */
+.horario-turno-zone {
+  min-height: 40px;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px dashed var(--border-subtle);
+  transition: background var(--transition-fast);
+}
+.horario-turno-zone:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.horario-turno-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-align: right;
+  margin-bottom: 2px;
+  letter-spacing: 0.05em;
+}
+.horario-turno-zone.drop-target-active {
+  background: hsla(210, 100%, 50%, 0.08);
+  border-radius: var(--radius-sm);
+  outline: 2px dashed var(--color-primary);
+  outline-offset: -2px;
 }
 
 /* ── Botón Agregar Empleado a Día ── */

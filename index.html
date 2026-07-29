@@ -1256,9 +1256,9 @@
       const fecha = wk.dateKeys[i];
       if(existing){
         const found = existing.asignaciones?.find(a => a.dia === dia);
-        if(found) return { dia, fecha, empleados: found.empleados || [] };
+        if(found) return { dia, fecha, t1: found.t1 || [], t2: found.t2 || [], t3: found.t3 || [] };
       }
-      return { dia, fecha, empleados: [] };
+      return { dia, fecha, t1: [], t2: [], t3: [] };
     });
   }
 
@@ -1310,14 +1310,19 @@
                 ${HR_DIAS.map((dia, di) => {
                   const dayData = asig[di];
                   return `<td class="horario-day-cell" data-suc="${s.code}" data-dia="${dia}" data-di="${di}">
-                    ${(dayData.empleados||[]).map((emp, ei) => {
-                      const isCub = emp.es_cubrimiento;
-                      return `<div class="horario-emp-chip${isCub ? ' cubrimiento' : ''}" draggable="${!_hrReadonly}" data-suc="${s.code}" data-dia="${dia}" data-idx="${ei}" data-eid="${emp.empleado_id||''}" data-origen="${emp.sucursal_origen||''}">
-                        <span>${emp.nombre}${isCub ? ` <span class="emp-origin-tag">(AT1 ${emp.sucursal_origen})</span>` : ''}</span>
-                        <span class="horario-emp-remove" data-suc="${s.code}" data-dia="${dia}" data-idx="${ei}">×</span>
-                      </div>`;
-                    }).join('')}
-                    ${!_hrReadonly ? `<button class="horario-add-to-day" data-suc="${s.code}" data-dia="${dia}" data-di="${di}" type="button">+</button>` : ''}
+                    ${['t1','t2','t3'].map(turno => `
+                      <div class="horario-turno-zone" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}">
+                        <div class="horario-turno-label">${turno.toUpperCase()}</div>
+                        ${(dayData[turno]||[]).map((emp, ei) => {
+                          const isCub = emp.es_cubrimiento;
+                          return `<div class="horario-emp-chip${isCub ? ' cubrimiento' : ''}" draggable="${!_hrReadonly}" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}" data-idx="${ei}" data-eid="${emp.empleado_id||''}" data-origen="${emp.sucursal_origen||''}">
+                            <span>${emp.nombre}${isCub ? ` <span class="emp-origin-tag">(AT1 ${emp.sucursal_origen})</span>` : ''}</span>
+                            <span class="horario-emp-remove" data-suc="${s.code}" data-dia="${dia}" data-turno="${turno}" data-idx="${ei}">×</span>
+                          </div>`;
+                        }).join('')}
+                        ${!_hrReadonly ? `<button class="horario-add-to-day" data-suc="${s.code}" data-dia="${dia}" data-di="${di}" data-turno="${turno}" type="button">+</button>` : ''}
+                      </div>
+                    `).join('')}
                   </td>`;
                 }).join('')}
               </tr></tbody>
@@ -1347,11 +1352,11 @@
     _hrContainer.querySelectorAll('.horario-emp-remove').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        const {suc, dia, idx} = btn.dataset;
+        const {suc, dia, turno, idx} = btn.dataset;
         const asig = _hrBuildAsignaciones(suc);
         const dayObj = asig.find(a => a.dia === dia);
         if(dayObj) {
-          dayObj.empleados.splice(Number(idx), 1);
+          dayObj[turno].splice(Number(idx), 1);
           _hrUpdateLocalHorario(suc, asig);
           _hrRender();
         }
@@ -1360,7 +1365,7 @@
     // Add-to-day buttons (opens employee picker)
     _hrContainer.querySelectorAll('.horario-add-to-day').forEach(btn => {
       btn.addEventListener('click', () => {
-        _hrOpenAssignDropdown(btn.dataset.suc, btn.dataset.dia, Number(btn.dataset.di));
+        _hrOpenAssignDropdown(btn.dataset.suc, btn.dataset.dia, Number(btn.dataset.di), btn.dataset.turno);
       });
     });
     // Drag & Drop (Desktop)
@@ -1368,7 +1373,7 @@
       chip.addEventListener('dragstart', e => {
         chip.classList.add('dragging');
         e.dataTransfer.setData('text/plain', JSON.stringify({
-          suc: chip.dataset.suc, dia: chip.dataset.dia, idx: Number(chip.dataset.idx),
+          suc: chip.dataset.suc, dia: chip.dataset.dia, turno: chip.dataset.turno, idx: Number(chip.dataset.idx),
           eid: chip.dataset.eid, origen: chip.dataset.origen
         }));
         e.dataTransfer.effectAllowed = 'move';
@@ -1378,50 +1383,50 @@
       chip.addEventListener('click', e => {
         if(window.matchMedia('(hover: none)').matches || window.innerWidth < 768){
           e.stopPropagation();
-          _hrSelectedChip = { suc: chip.dataset.suc, dia: chip.dataset.dia, idx: Number(chip.dataset.idx) };
+          _hrSelectedChip = { suc: chip.dataset.suc, dia: chip.dataset.dia, turno: chip.dataset.turno, idx: Number(chip.dataset.idx) };
           _hrContainer.querySelectorAll('.horario-emp-chip').forEach(c => c.classList.remove('selected'));
           chip.classList.add('selected');
         }
       });
     });
-    _hrContainer.querySelectorAll('.horario-day-cell').forEach(cell => {
-      cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drop-target-active'); });
-      cell.addEventListener('dragleave', () => cell.classList.remove('drop-target-active'));
-      cell.addEventListener('drop', e => {
+    _hrContainer.querySelectorAll('.horario-turno-zone').forEach(zone => {
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drop-target-active'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('drop-target-active'));
+      zone.addEventListener('drop', e => {
         e.preventDefault();
-        cell.classList.remove('drop-target-active');
+        zone.classList.remove('drop-target-active');
         try {
           const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-          _hrMoveEmployee(data.suc, data.dia, data.idx, cell.dataset.suc, cell.dataset.dia);
+          _hrMoveEmployee(data.suc, data.dia, data.turno, data.idx, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
         } catch(err){}
       });
       // Tap-to-move destination
-      cell.addEventListener('click', () => {
+      zone.addEventListener('click', () => {
         if(_hrSelectedChip){
-          _hrMoveEmployee(_hrSelectedChip.suc, _hrSelectedChip.dia, _hrSelectedChip.idx, cell.dataset.suc, cell.dataset.dia);
+          _hrMoveEmployee(_hrSelectedChip.suc, _hrSelectedChip.dia, _hrSelectedChip.turno, _hrSelectedChip.idx, zone.dataset.suc, zone.dataset.dia, zone.dataset.turno);
           _hrSelectedChip = null;
         }
       });
     });
   }
 
-  function _hrMoveEmployee(fromSuc, fromDia, fromIdx, toSuc, toDia){
+  function _hrMoveEmployee(fromSuc, fromDia, fromTurno, fromIdx, toSuc, toDia, toTurno){
     const fromAsig = _hrBuildAsignaciones(fromSuc);
     const fromDay = fromAsig.find(a => a.dia === fromDia);
-    if(!fromDay || !fromDay.empleados[fromIdx]) return;
-    const emp = { ...fromDay.empleados[fromIdx] };
+    if(!fromDay || !fromDay[fromTurno][fromIdx]) return;
+    const emp = { ...fromDay[fromTurno][fromIdx] };
     // Remove from source
-    fromDay.empleados.splice(fromIdx, 1);
+    fromDay[fromTurno].splice(fromIdx, 1);
     _hrUpdateLocalHorario(fromSuc, fromAsig);
     // Add to destination
     const toAsig = fromSuc === toSuc ? fromAsig : _hrBuildAsignaciones(toSuc);
     const toDay = toAsig.find(a => a.dia === toDia);
     if(!toDay) return;
     emp.es_cubrimiento = (emp.sucursal_origen !== toSuc);
-    toDay.empleados.push(emp);
+    toDay[toTurno].push(emp);
     _hrUpdateLocalHorario(toSuc, toAsig);
     _hrRender();
-    showToast(`${emp.nombre} movido a ${toDia} (${toSuc})`, 'info', 2000);
+    showToast(`${emp.nombre} movido a ${toDia} ${toTurno.toUpperCase()} (${toSuc})`, 'info', 2000);
   }
 
   function _hrUpdateLocalHorario(suc, asignaciones){
@@ -1455,7 +1460,7 @@
     }
   }
 
-  function _hrOpenAssignDropdown(suc, dia, di){
+  function _hrOpenAssignDropdown(suc, dia, di, turno){
     const root = _hrContainer.querySelector('#hr-assign-root');
     if(!root) return;
     const allEmps = _hrEmpleados.filter(e => e.activo !== false);
@@ -1463,7 +1468,7 @@
     <div class="horario-assign-overlay" id="hr-assign-overlay"></div>
     <div class="horario-assign-dropdown">
       <div class="horario-assign-dropdown-header">
-        <span class="horario-assign-dropdown-title">Asignar a ${dia} — ${suc}</span>
+        <span class="horario-assign-dropdown-title">Asignar a ${dia} ${turno.toUpperCase()} — ${suc}</span>
         <button class="horario-assign-dropdown-close" id="hr-assign-close" type="button">${icon('close',18)}</button>
       </div>
       ${allEmps.map(emp => {
@@ -1487,7 +1492,7 @@
           sucursal_origen: item.dataset.origen,
           es_cubrimiento: item.dataset.origen !== suc
         };
-        dayObj.empleados.push(newEmp);
+        dayObj[turno].push(newEmp);
         _hrUpdateLocalHorario(suc, asig);
         root.innerHTML='';
         _hrRender();

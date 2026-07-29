@@ -27,7 +27,9 @@ const DiaAsignacionSchema = new mongoose.Schema({
   fecha: {
     type: String,
   },
-  empleados: [EmpleadoAsignadoSchema],
+  t1: [EmpleadoAsignadoSchema],
+  t2: [EmpleadoAsignadoSchema],
+  t3: [EmpleadoAsignadoSchema],
 }, { _id: false });
 
 const HorarioSchema = new mongoose.Schema({
