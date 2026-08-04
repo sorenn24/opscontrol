@@ -2179,7 +2179,7 @@
   // ============================================================
   // VENTAS EXTRAORDINARIAS COMPONENT (EMPLEADOS)
   // ============================================================
-  let _vxState = { sucursal: '', turno: '', nombre: '', apellido: '', foto_base64: null, monto: '', loading: false, error: '' };
+  let _vxState = { fecha: todayKey(), sucursal: '', turno: '', nombre: '', apellido: '', foto_base64: null, monto: '', loading: false, error: '' };
 
   async function apiUploadVentaExtraordinaria(data) {
     const r = await fetch('/api/ventas', {
@@ -2195,7 +2195,8 @@
   }
 
   function mountVxLogin(container) {
-    _vxState = { sucursal: '', turno: '', nombre: '', apellido: '', foto_base64: null, monto: '', loading: false, error: '' };
+    if(!container) return;
+    _vxState = { fecha: todayKey(), sucursal: '', turno: '', nombre: '', apellido: '', foto_base64: null, monto: '', loading: false, error: '' };
     _renderVxLogin(container);
   }
 
@@ -2207,6 +2208,11 @@
         <button id="btn-mode-leader" class="vx-leader-btn" title="Acceso Líderes">${icon('lock',18)}</button>
         <h2 class="vx-login-title"><span class="icon">${icon('ticket',32)}</span> Venta Extraordinaria</h2>
         
+        <div class="vx-input-group">
+          <label class="vx-input-label">Fecha del Ticket</label>
+          <input type="date" id="vx-fecha" class="vx-input" value="${_vxState.fecha}" required>
+        </div>
+
         <div class="vx-input-group">
           <label class="vx-input-label">Sucursal</label>
           <select id="vx-suc" class="vx-input">
@@ -2245,11 +2251,12 @@
     document.getElementById('btn-mode-leader').addEventListener('click', () => { _lMode = 'leader'; _renderLogin(container); });
 
     document.getElementById('vx-continue-btn').addEventListener('click', () => {
+      _vxState.fecha = document.getElementById('vx-fecha').value;
       _vxState.sucursal = document.getElementById('vx-suc').value;
       _vxState.turno = document.getElementById('vx-tur').value;
       _vxState.nombre = document.getElementById('vx-nom').value.trim();
       _vxState.apellido = document.getElementById('vx-ape').value.trim();
-      if(!_vxState.sucursal || !_vxState.turno || !_vxState.nombre || !_vxState.apellido) {
+      if(!_vxState.fecha || !_vxState.sucursal || !_vxState.turno || !_vxState.nombre || !_vxState.apellido) {
         _vxState.error = 'Por favor completa todos los campos.';
         _renderVxLogin(container);
         return;
@@ -2336,7 +2343,7 @@
       _vxState.loading = true; _vxState.error = ''; _renderVxForm(container);
       try {
         await apiUploadVentaExtraordinaria({
-          fecha_ticket: todayKey(),
+          fecha_ticket: _vxState.fecha,
           sucursal: _vxState.sucursal,
           turno: _vxState.turno,
           empleado_nombre: _vxState.nombre,
