@@ -2498,25 +2498,36 @@
       });
     });
 
-    container.querySelectorAll('.vx-action-btn.validar').forEach(b => {
-      b.addEventListener('click', async (e) => {
-        const id = e.currentTarget.dataset.id;
-        try {
-          await apiValidarVenta(id, 'VALIDADO');
-          mountVxPanel(container);
-          showToast('Ticket validado.', 'success');
-        } catch(err) { showToast('Error: ' + err.message, 'error'); }
-      });
-    });
+    container.querySelectorAll('.vx-action-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const actionBtn = e.currentTarget;
+        const id = actionBtn.dataset.id;
 
-    container.querySelectorAll('.vx-action-btn.rechazar').forEach(b => {
-      b.addEventListener('click', async (e) => {
-        const id = e.currentTarget.dataset.id;
+        if (actionBtn.classList.contains('eliminar')) {
+          if(confirm('¿Seguro que deseas eliminar este registro de Venta Extraordinaria?')) {
+            actionBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
+            try {
+              await apiDeleteVenta(id);
+              mountVxPanel(container);
+              showToast('Venta eliminada correctamente.', 'success');
+            } catch(err) {
+              showToast('Error: ' + err.message, 'error');
+              actionBtn.innerHTML = icon('trash',14);
+            }
+          }
+          return;
+        }
+
+        const nuevoEstado = actionBtn.classList.contains('validar') ? 'VALIDADO' : 'RECHAZADO';
+        actionBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin:0 auto"></div>';
         try {
-          await apiValidarVenta(id, 'RECHAZADO');
+          await apiValidarVenta(id, nuevoEstado);
           mountVxPanel(container);
-          showToast('Ticket rechazado.', 'info');
-        } catch(err) { showToast('Error: ' + err.message, 'error'); }
+          showToast(`Ticket ${nuevoEstado.toLowerCase()}.`, nuevoEstado === 'VALIDADO' ? 'success' : 'info');
+        } catch(err) {
+          showToast('Error: ' + err.message, 'error');
+          mountVxPanel(container);
+        }
       });
     });
   }
