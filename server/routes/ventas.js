@@ -57,11 +57,12 @@ router.post('/', async (req, res) => {
 // ── GET /api/ventas (Líderes/Admin) ───────────────────────────────
 router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
   try {
-    const { date, sucursal, turno } = req.query;
+    const { date, sucursal, turno, nombre } = req.query;
     
     let filter = {};
     if (date) filter.fecha_ticket = date;
     if (turno) filter.turno = turno;
+    if (nombre) filter.empleado_nombre = new RegExp(nombre, 'i');
 
     // Admin can see all, leaders only their branches
     if (req.session.userRole !== 'admin') {
@@ -111,6 +112,25 @@ router.put('/:id/validar', requireAuth, checkLeaderAccess, async (req, res) => {
   } catch (err) {
     console.error('[ventas/validar]', err);
     return res.status(500).json({ error: 'Error al validar la venta.' });
+  }
+});
+
+// ── DELETE /api/ventas/:id ────────────────────────────────────────
+router.delete('/:id', requireAuth, checkLeaderAccess, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const venta = await VentaExtraordinaria.findById(id);
+    if (!venta) return res.status(404).json({ error: 'Venta no encontrada.' });
+
+    if (req.session.userRole !== 'admin' && !req.userBranches.includes(venta.sucursal)) {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar esta venta.' });
+    }
+
+    await VentaExtraordinaria.findByIdAndDelete(id);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('[ventas/delete]', err);
+    return res.status(500).json({ error: 'Error al eliminar la venta.' });
   }
 });
 

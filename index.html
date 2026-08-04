@@ -2196,14 +2196,7 @@
   }
 
   function _renderVxLogin(container) {
-    const sucursales = [
-      {id:'ORD',name:'Manuel Ordoñez'}, {id:'CUA',name:'Cuauhtémoc'}, {id:'LN2',name:'Leones 2'},
-      {id:'INS',name:'Insurgentes'}, {id:'SMB',name:'Simón Bolívar'}, {id:'PL2',name:'Plaza L2'},
-      {id:'EC2',name:'Ecológica 2'}, {id:'AVM',name:'Avenida M'}, {id:'ROD',name:'Rodrigo'},
-      {id:'LNO',name:'Lomas'}, {id:'MTU',name:'Mitras U'}, {id:'MTC',name:'Mitras C'},
-      {id:'BTJ',name:'Bicentenario'}, {id:'RS2',name:'Rosario 2'}, {id:'RCS',name:'RCS'},
-      {id:'ANT',name:'Antiguo'}
-    ];
+    const sucursales = ['ORD','CUA','LN2','INS','SMB','PL2','EC2','AVM','ROD','LNO','MTU','MTC','BTJ','RS2','RCS','ANT'];
 
     container.innerHTML = `
       <div class="vx-login-container">
@@ -2214,7 +2207,7 @@
           <label class="vx-input-label">Sucursal</label>
           <select id="vx-suc" class="vx-input">
             <option value="">Selecciona tu sucursal...</option>
-            ${sucursales.map(s => `<option value="${s.id}" ${_vxState.sucursal===s.id?'selected':''}>${s.name}</option>`).join('')}
+            ${sucursales.map(s => `<option value="${s}" ${_vxState.sucursal===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
         
@@ -2370,14 +2363,14 @@
   // ============================================================
   // VENTAS EXTRAORDINARIAS COMPONENT (LIDER/ADMIN)
   // ============================================================
-  let _vxPanelState = { ventas: [], loading: false, date: todayKey(), sucursal: '', turno: '' };
+  let _vxPanelState = { ventas: [], loading: false, date: todayKey(), sucursal: '', turno: '', nombre: '' };
 
   async function mountVxPanel(container) {
     if(!container) return;
     _vxPanelState.loading = true;
     _renderVxPanel(container);
     try {
-      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: _vxPanelState.date, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno });
+      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: _vxPanelState.date, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno, nombre: _vxPanelState.nombre });
     } catch(e) { console.error(e); }
     _vxPanelState.loading = false;
     _renderVxPanel(container);
@@ -2400,6 +2393,12 @@
     return await r.json();
   }
 
+  async function apiDeleteVenta(id) {
+    const r = await fetch(`/api/ventas/${id}`, { method: 'DELETE' });
+    if(!r.ok) throw new Error('Error al eliminar');
+    return await r.json();
+  }
+
   function _renderVxPanel(container) {
     if(!container) return;
     const { currentUser } = getState();
@@ -2411,7 +2410,7 @@
     container.innerHTML = `
       <div style="padding-top:16px;">
         <div class="vx-panel-header">
-          <div class="vx-filters">
+          <div class="vx-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
             <input type="date" id="vx-filter-date" class="pin-input" style="height:36px;padding:0 12px;background:var(--bg-surface)" value="${_vxPanelState.date}">
             <select id="vx-filter-suc" class="pin-input" style="height:36px;padding:0 12px;background:var(--bg-surface)">
               <option value="">Todas las sucursales</option>
@@ -2423,6 +2422,7 @@
               <option value="T2" ${_vxPanelState.turno==='T2'?'selected':''}>T2</option>
               <option value="T3" ${_vxPanelState.turno==='T3'?'selected':''}>T3</option>
             </select>
+            <input type="text" id="vx-filter-nom" class="pin-input" placeholder="Nombre..." style="height:36px;padding:0 12px;background:var(--bg-surface);width:120px;" value="${_vxPanelState.nombre}">
             <button id="vx-filter-btn" class="btn btn-secondary" style="height:36px;display:flex;align-items:center;gap:4px;">${icon('refresh',14)} Filtrar</button>
           </div>
         </div>
@@ -2460,12 +2460,13 @@
               </div>
               <div class="vx-card-body">
                 <div class="vx-card-title">${v.empleado_nombre} ${v.empleado_apellido}</div>
-                <div class="vx-card-monto">$${Number(v.monto).toLocaleString('es-MX')}</div>
+                <div class="vx-card-monto" style="font-size: 16px; font-weight: 700; word-break: break-all;">$${Number(v.monto).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
                 <div class="vx-card-meta">Registrado: ${new Date(v.createdAt).toLocaleTimeString()}</div>
               </div>
               <div class="vx-card-actions">
-                <button class="vx-action-btn validar" data-id="${v._id}" ${v.estado_validacion==='VALIDADO'?'disabled style="opacity:0.5"':''}>${icon('check',14)} Validar</button>
-                <button class="vx-action-btn rechazar" data-id="${v._id}" ${v.estado_validacion==='RECHAZADO'?'disabled style="opacity:0.5"':''}>${icon('close',14)} Rechazar</button>
+                <button class="vx-action-btn validar" data-id="${v._id}" ${v.estado_validacion==='VALIDADO'?'disabled style="opacity:0.5"':''}>${icon('check',14)}</button>
+                <button class="vx-action-btn rechazar" data-id="${v._id}" ${v.estado_validacion==='RECHAZADO'?'disabled style="opacity:0.5"':''}>${icon('close',14)}</button>
+                <button class="vx-action-btn eliminar" data-id="${v._id}" style="color:var(--color-danger);">${icon('trash',14)}</button>
               </div>
             </div>
           `).join('')}
@@ -2478,6 +2479,7 @@
       _vxPanelState.date = document.getElementById('vx-filter-date').value;
       _vxPanelState.sucursal = document.getElementById('vx-filter-suc').value;
       _vxPanelState.turno = document.getElementById('vx-filter-tur').value;
+      _vxPanelState.nombre = document.getElementById('vx-filter-nom').value.trim();
       mountVxPanel(container);
     });
 
