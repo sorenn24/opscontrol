@@ -196,29 +196,37 @@ select.vx-input {
 .vx-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
 .vx-filters { display: flex; gap: 12px; flex-wrap: wrap; }
 .vx-kpi-container { display: flex; gap: 16px; margin-bottom: 24px; }
-.vx-kpi-card { flex: 1; background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); text-align: center; }
-.vx-kpi-value { font-size: 24px; font-weight: 800; color: var(--color-primary); }
-.vx-kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
-.vx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-.vx-card { background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); overflow: hidden; display: flex; flex-direction: column; }
-.vx-card-header { padding: 12px; background: var(--bg-surface-2); border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; }
-.vx-card-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
-.vx-card-badge.PENDIENTE { background: hsla(40, 100%, 80%, 0.8); color: hsla(40, 90%, 30%, 1); }
-.vx-card-badge.VALIDADO { background: hsla(120, 50%, 85%, 0.8); color: hsla(120, 70%, 25%, 1); }
-.vx-card-badge.RECHAZADO { background: hsla(0, 70%, 85%, 0.8); color: hsla(0, 80%, 30%, 1); }
-.vx-card-img-wrapper { height: 180px; background: #000; cursor: zoom-in; position: relative; }
-.vx-card-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: opacity 0.2s; }
+.vx-kpi-card { flex: 1; background: linear-gradient(145deg, #ffffff, #f9fafb); padding: 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); text-align: center; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); }
+.vx-kpi-value { font-size: 28px; font-weight: 800; color: var(--color-primary); letter-spacing: -0.5px; }
+.vx-kpi-label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+.vx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+/* ── Tarjetas Premium de Líder ── */
+.vx-card { background: #ffffff; border-radius: 20px; border: 1px solid rgba(0,0,0,0.04); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 12px 24px -8px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+.vx-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px -8px rgba(0,0,0,0.12); }
+.vx-card-header { padding: 14px 16px; background: rgba(0,0,0,0.02); border-bottom: 1px solid rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+.vx-card-badge { font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.vx-card-badge.PENDIENTE { background: var(--color-warning-subtle); color: var(--color-warning); }
+.vx-card-badge.VALIDADO { background: var(--color-success-subtle); color: var(--color-success); }
+.vx-card-badge.RECHAZADO { background: var(--color-danger-subtle); color: var(--color-danger); }
+.vx-card-img-wrapper { height: 190px; background: #000; cursor: zoom-in; position: relative; }
+.vx-card-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.85; transition: opacity 0.3s; }
 .vx-card-img:hover { opacity: 1; }
-.vx-card-body { padding: 12px; flex-grow: 1; }
-.vx-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-.vx-card-monto { font-size: 18px; font-weight: 800; color: var(--color-primary); margin-top: 4px; }
-.vx-card-meta { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
-.vx-card-actions { display: flex; border-top: 1px solid var(--border-subtle); }
-.vx-action-btn { flex: 1; padding: 10px; text-align: center; font-weight: 600; font-size: 12px; cursor: pointer; background: var(--bg-surface); border: none; transition: background 0.2s; }
-.vx-action-btn.validar:hover { background: hsla(120, 50%, 90%, 1); color: hsla(120, 70%, 25%, 1); }
-.vx-action-btn.rechazar:hover { background: hsla(0, 70%, 90%, 1); color: hsla(0, 80%, 30%, 1); }
-.vx-action-btn:first-child { border-right: 1px solid var(--border-subtle); }
-.vx-lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-.vx-lightbox-img { max-width: 95vw; max-height: 85vh; object-fit: contain; }
-.vx-lightbox-close { position: absolute; top: 20px; right: 20px; color: white; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.vx-lightbox-close:hover { background: rgba(255,255,255,0.4); }
+.vx-card-body { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; gap: 4px; }
+.vx-card-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+.vx-card-monto { font-size: 24px; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 4px; overflow-wrap: break-word; word-break: break-word; }
+.vx-card-meta { font-size: 12px; font-weight: 500; color: var(--text-disabled); margin-top: auto; padding-top: 8px; }
+
+/* ── Botones de Acción ── */
+.vx-card-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid rgba(0,0,0,0.04); background: #fafafa; }
+.vx-action-btn { padding: 12px; text-align: center; font-weight: 700; font-size: 12px; cursor: pointer; background: transparent; border: none; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); }
+.vx-action-btn:hover { background: #ffffff; }
+.vx-action-btn.validar:hover { color: var(--color-success); box-shadow: inset 0 -3px 0 var(--color-success); }
+.vx-action-btn.rechazar:hover { color: var(--color-warning); box-shadow: inset 0 -3px 0 var(--color-warning); }
+.vx-action-btn.eliminar:hover { color: var(--color-danger); box-shadow: inset 0 -3px 0 var(--color-danger); }
+.vx-action-btn:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.04); }
+
+.vx-lightbox { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(4px); }
+.vx-lightbox-img { max-width: 95vw; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+.vx-lightbox-close { position: absolute; top: 20px; right: 20px; color: white; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.vx-lightbox-close:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
