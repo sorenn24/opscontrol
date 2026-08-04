@@ -22,6 +22,7 @@ const reportsRouter = require('./routes/reports');
 const ticketsRouter = require('./routes/tickets');
 const empleadosRouter = require('./routes/empleados');
 const horariosRouter = require('./routes/horarios');
+const ventasRouter  = require('./routes/ventas');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -32,8 +33,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => { console.error('❌ Error MongoDB:', err.message); process.exit(1); });
 
 // ── Middleware global ─────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // CORS — permite requests del frontend
 app.use(cors({
@@ -68,6 +69,7 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/empleados', empleadosRouter);
 app.use('/api/horarios', horariosRouter);
+app.use('/api/ventas',  ventasRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
