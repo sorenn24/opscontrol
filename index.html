@@ -591,27 +591,7 @@
 
   function _renderLogin(container){
     if(_lMode === 'home') {
-      container.innerHTML=`
-      <div class="login-page">
-        <div class="login-card" role="main" style="text-align:center;">
-          <div class="login-brand">
-            <div class="login-logo">${icon('clipboard',28)}</div>
-            <h1 class="login-title">OpsControl</h1>
-            <p class="login-subtitle">Panel de Control de Sucursal</p>
-          </div>
-          <div style="margin-top: 32px; display:flex; flex-direction:column; gap:16px;">
-            <button id="btn-mode-leader" class="btn btn-primary" style="height:56px; font-size:15px; display:flex; align-items:center; justify-content:center; gap:8px;">
-              <span class="icon">${icon('lock',20)}</span> Acceso Líderes y Admin
-            </button>
-            <button id="btn-mode-vx" class="vx-btn-secondary" style="height:56px; font-size:15px; margin:0; display:flex; align-items:center; justify-content:center; gap:8px;">
-              <span class="icon">${icon('ticket',20)}</span> Subir Venta Extraordinaria
-            </button>
-          </div>
-          <div class="login-footer" style="margin-top:32px;">OpsControl v1.0 &nbsp;·&nbsp; Uso interno</div>
-        </div>
-      </div>`;
-      document.getElementById('btn-mode-leader').addEventListener('click', () => { _lMode = 'leader'; _renderLogin(container); });
-      document.getElementById('btn-mode-vx').addEventListener('click', () => mountVxLogin(container));
+      mountVxLogin(container);
       return;
     }
 
@@ -2227,38 +2207,45 @@
 
     container.innerHTML = `
       <div class="vx-login-container">
-        <h2 class="vx-login-title">${icon('ticket',20)} Venta Extraordinaria</h2>
-        <div style="margin-bottom:16px;">
-          <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Sucursal</label>
-          <select id="vx-suc" class="pin-input" style="width:100%;height:40px;background:var(--bg-body);border:1px solid var(--border-default)">
+        <button id="btn-mode-leader" class="vx-leader-btn" title="Acceso Líderes">${icon('lock',18)}</button>
+        <h2 class="vx-login-title"><span class="icon">${icon('ticket',32)}</span> Venta Extraordinaria</h2>
+        
+        <div class="vx-input-group">
+          <label class="vx-input-label">Sucursal</label>
+          <select id="vx-suc" class="vx-input">
             <option value="">Selecciona tu sucursal...</option>
             ${sucursales.map(s => `<option value="${s.id}" ${_vxState.sucursal===s.id?'selected':''}>${s.name}</option>`).join('')}
           </select>
         </div>
-        <div style="margin-bottom:16px;">
-          <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Turno</label>
-          <select id="vx-tur" class="pin-input" style="width:100%;height:40px;background:var(--bg-body);border:1px solid var(--border-default)">
+        
+        <div class="vx-input-group">
+          <label class="vx-input-label">Turno</label>
+          <select id="vx-tur" class="vx-input">
             <option value="">Selecciona tu turno...</option>
             <option value="T1" ${_vxState.turno==='T1'?'selected':''}>T1 (Mañana)</option>
             <option value="T2" ${_vxState.turno==='T2'?'selected':''}>T2 (Tarde)</option>
             <option value="T3" ${_vxState.turno==='T3'?'selected':''}>T3 (Noche)</option>
           </select>
         </div>
-        <div style="margin-bottom:16px; display:flex; gap:12px;">
+        
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
           <div style="flex:1;">
-            <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Nombre</label>
-            <input type="text" id="vx-nom" class="pin-input" style="width:100%;height:40px;padding-left:12px" value="${_vxState.nombre}" placeholder="Ej. Juan">
+            <label class="vx-input-label">Nombre</label>
+            <input type="text" id="vx-nom" class="vx-input" value="${_vxState.nombre}" placeholder="Ej. Juan">
           </div>
           <div style="flex:1;">
-            <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Apellido</label>
-            <input type="text" id="vx-ape" class="pin-input" style="width:100%;height:40px;padding-left:12px" value="${_vxState.apellido}" placeholder="Ej. Pérez">
+            <label class="vx-input-label">Apellido</label>
+            <input type="text" id="vx-ape" class="vx-input" value="${_vxState.apellido}" placeholder="Ej. Pérez">
           </div>
         </div>
-        ${_vxState.error ? `<div class="login-error"><span class="icon">${icon('warning',16)}</span><span>${_vxState.error}</span></div>` : ''}
-        <button id="vx-continue-btn" class="vx-btn-primary" type="button">Continuar a Captura</button>
-        <button id="vx-back-btn" class="vx-btn-secondary" type="button" style="margin-top:16px;">Volver al Inicio</button>
+        
+        ${_vxState.error ? `<div class="login-error" style="margin-bottom:16px"><span class="icon">${icon('warning',16)}</span><span>${_vxState.error}</span></div>` : ''}
+        
+        <button id="vx-continue-btn" class="vx-btn-primary" type="button">Continuar a Captura ${icon('chevronRight',18)}</button>
       </div>
     `;
+
+    document.getElementById('btn-mode-leader').addEventListener('click', () => { _lMode = 'leader'; _renderLogin(container); });
 
     document.getElementById('vx-continue-btn').addEventListener('click', () => {
       _vxState.sucursal = document.getElementById('vx-suc').value;
@@ -2273,7 +2260,6 @@
       _vxState.error = '';
       mountVxForm(container);
     });
-    document.getElementById('vx-back-btn').addEventListener('click', () => mountLogin(container));
   }
 
   function mountVxForm(container) {
@@ -2283,33 +2269,33 @@
   function _renderVxForm(container) {
     container.innerHTML = `
       <div class="vx-form-container">
-        <h2 class="vx-login-title">${icon('dollar',20)} Venta Extraordinaria</h2>
-        <div style="margin-bottom:24px; text-align:center; font-size:14px; color:var(--text-muted);">
+        <h2 class="vx-login-title"><span class="icon">${icon('dollar',32)}</span> Detalles de la Venta</h2>
+        <div style="margin-bottom:24px; text-align:center; font-size:14px; color:var(--text-muted); background:var(--bg-surface-2); padding:8px; border-radius:12px;">
           <b>${_vxState.nombre} ${_vxState.apellido}</b> &nbsp;|&nbsp; ${_vxState.sucursal} - ${_vxState.turno}
         </div>
 
-        <div style="margin-bottom:16px;">
-          <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Monto de Venta ($)</label>
+        <div class="vx-input-group">
+          <label class="vx-input-label">Monto de Venta ($)</label>
           <div style="position:relative;">
-            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-weight:bold; color:var(--text-muted)">$</span>
-            <input type="number" id="vx-monto" class="pin-input" style="width:100%;height:48px;padding-left:30px;font-size:18px;" value="${_vxState.monto}" placeholder="Ej. 350.00">
+            <span style="position:absolute; left:16px; top:50%; transform:translateY(-50%); font-weight:800; color:var(--color-primary); font-size:18px;">$</span>
+            <input type="number" id="vx-monto" class="vx-input" style="padding-left:36px;font-size:18px;font-weight:700;" value="${_vxState.monto}" placeholder="Ej. 350.00">
           </div>
         </div>
 
-        <div style="margin-bottom:16px;">
-          <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-muted)">Fotografía del Ticket</label>
+        <div class="vx-input-group">
+          <label class="vx-input-label">Fotografía del Ticket</label>
           <div class="vx-image-preview" id="vx-img-trigger">
-            ${_vxState.foto_base64 ? `<img src="${_vxState.foto_base64}" />` : `<div class="vx-image-preview-placeholder">${icon('package',32)}<br><span style="font-size:12px;">Toca para tomar foto</span></div>`}
+            ${_vxState.foto_base64 ? `<img src="${_vxState.foto_base64}" />` : `<div class="vx-image-preview-placeholder">${icon('camera',40)}<span>Toca para tomar foto o elegir de la galería</span></div>`}
           </div>
-          <input type="file" id="vx-file" class="vx-file-input" accept="image/*" capture="environment">
+          <input type="file" id="vx-file" class="vx-file-input" accept="image/*">
         </div>
 
-        ${_vxState.error ? `<div class="login-error"><span class="icon">${icon('warning',16)}</span><span>${_vxState.error}</span></div>` : ''}
+        ${_vxState.error ? `<div class="login-error" style="margin-bottom:16px"><span class="icon">${icon('warning',16)}</span><span>${_vxState.error}</span></div>` : ''}
 
         <button id="vx-submit-btn" class="vx-btn-primary" type="button" ${_vxState.loading?'disabled':''}>
-          ${_vxState.loading ? `<div class="spinner"></div> Subiendo...` : `Registrar Venta`}
+          ${_vxState.loading ? `<div class="spinner"></div> Subiendo...` : `${icon('upload',18)} Registrar Venta`}
         </button>
-        <button id="vx-back-form-btn" class="vx-btn-secondary" type="button" style="margin-top:16px;" ${_vxState.loading?'disabled':''}>Volver atrás</button>
+        <button id="vx-back-form-btn" class="vx-btn-secondary" type="button" ${_vxState.loading?'disabled':''}>${icon('chevronLeft',18)} Volver atrás</button>
       </div>
     `;
 
@@ -2362,11 +2348,10 @@
         });
         container.innerHTML = `
           <div class="vx-form-container" style="text-align:center;">
-            <div style="color:var(--color-success); margin-bottom:16px;">${icon('checkCircle',48)}</div>
+            <div style="color:var(--color-success); margin-bottom:24px;">${icon('checkCircle',64)}</div>
             <h2 class="vx-login-title">¡Venta Registrada!</h2>
-            <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">Tu ticket ha sido enviado para validación.</p>
+            <p style="color:var(--text-secondary); font-size:15px; margin-bottom:32px;">Tu ticket ha sido enviado exitosamente para validación.</p>
             <button class="vx-btn-primary" onclick="mountVxLogin(document.getElementById('root'))">Registrar otro ticket</button>
-            <button class="vx-btn-secondary" onclick="mountLogin(document.getElementById('root'))" style="margin-top:16px;">Salir al Inicio</button>
           </div>
         `;
       } catch (err) {
