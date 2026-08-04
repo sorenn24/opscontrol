@@ -2304,6 +2304,7 @@
     document.getElementById('vx-file').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if(!file) return;
+      _vxState.monto = document.getElementById('vx-monto').value;
       const reader = new FileReader();
       reader.onload = (evt) => {
         const img = new Image();
