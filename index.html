@@ -2248,7 +2248,15 @@
       </div>
     `;
 
-    document.getElementById('btn-mode-leader').addEventListener('click', () => { _lMode = 'leader'; _renderLogin(container); });
+    document.getElementById('btn-mode-leader').addEventListener('click', () => {
+      const code = window.prompt('Código de seguridad (Solo Líderes):');
+      if (code === '2026') {
+        _lMode = 'leader'; 
+        _renderLogin(container);
+      } else if (code !== null) {
+        alert('Código incorrecto. Acceso denegado.');
+      }
+    });
 
     document.getElementById('vx-continue-btn').addEventListener('click', () => {
       _vxState.fecha = document.getElementById('vx-fecha').value;
