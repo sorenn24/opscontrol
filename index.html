@@ -1918,6 +1918,10 @@
           const hroot = _adContainer?.querySelector('#horarios-admin-root');
           if(hroot) mountHorariosModule(hroot, true);
         }
+        if(_adActiveTab==='ventas'){
+          const vxRoot = _adContainer?.querySelector('#ventas-admin-root');
+          if(vxRoot) mountVxPanel(vxRoot);
+        }
       });
     });
     _adAttachLeaderListListeners();
@@ -2402,7 +2406,9 @@
   function _renderVxPanel(container) {
     if(!container) return;
     const { currentUser } = getState();
-    const branches = currentUser?.branches || [];
+    const isAd = currentUser?.role === 'admin';
+    const allBranches = ['ORD','CUA','LN2','INS','SMB','PL2','EC2','AVM','ROD','LNO','MTU','MTC','BTJ','RS2','RCS','ANT'];
+    const branches = isAd ? allBranches : (currentUser?.branches || []);
 
     const total = _vxPanelState.ventas.length;
     const sum = _vxPanelState.ventas.reduce((acc, v) => acc + (Number(v.monto) || 0), 0);
@@ -2411,18 +2417,18 @@
       <div style="padding-top:16px;">
         <div class="vx-panel-header">
           <div class="vx-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
-            <input type="date" id="vx-filter-date" class="pin-input" style="height:36px;padding:0 12px;background:var(--bg-surface)" value="${_vxPanelState.date}">
-            <select id="vx-filter-suc" class="pin-input" style="height:36px;padding:0 12px;background:var(--bg-surface)">
+            <input type="date" id="vx-filter-date" class="vx-input" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
+            <select id="vx-filter-suc" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
               <option value="">Todas las sucursales</option>
               ${branches.map(b => `<option value="${b}" ${_vxPanelState.sucursal===b?'selected':''}>${b}</option>`).join('')}
             </select>
-            <select id="vx-filter-tur" class="pin-input" style="height:36px;padding:0 12px;background:var(--bg-surface)">
+            <select id="vx-filter-tur" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
               <option value="">Todos los turnos</option>
               <option value="T1" ${_vxPanelState.turno==='T1'?'selected':''}>T1</option>
               <option value="T2" ${_vxPanelState.turno==='T2'?'selected':''}>T2</option>
               <option value="T3" ${_vxPanelState.turno==='T3'?'selected':''}>T3</option>
             </select>
-            <input type="text" id="vx-filter-nom" class="pin-input" placeholder="Nombre..." style="height:36px;padding:0 12px;background:var(--bg-surface);width:120px;" value="${_vxPanelState.nombre}">
+            <input type="text" id="vx-filter-nom" class="vx-input" placeholder="Nombre..." style="height:36px;padding:0 12px;width:120px;" value="${_vxPanelState.nombre}">
             <button id="vx-filter-btn" class="btn btn-secondary" style="height:36px;display:flex;align-items:center;gap:4px;">${icon('refresh',14)} Filtrar</button>
           </div>
         </div>
