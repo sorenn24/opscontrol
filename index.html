@@ -2380,9 +2380,7 @@
   }
 
   // ============================================================
-  // VENTAS EXTRAORDINARIAS COMPONENT (LIDER/ADMIN)
-  // ============================================================
-  let _vxPanelState = { ventas: [], loading: false, date: todayKey(), sucursal: '', turno: '', nombre: '' };
+  let _vxPanelState = { ventas: [], loading: false, date: todayKey().substring(0, 7), sucursal: '', turno: '', nombre: '' };
 
   async function mountVxPanel(container) {
     if(!container) return;
@@ -2432,7 +2430,7 @@
       <div style="padding-top:16px;">
         <div class="vx-panel-header">
           <div class="vx-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
-            <input type="date" id="vx-filter-date" class="vx-input" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
+            <input type="month" id="vx-filter-date" class="vx-input" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
             <select id="vx-filter-suc" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
               <option value="">Todas las sucursales</option>
               ${branches.map(b => `<option value="${b}" ${_vxPanelState.sucursal===b?'selected':''}>${b}</option>`).join('')}

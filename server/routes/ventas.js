@@ -60,7 +60,7 @@ router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
     const { date, sucursal, turno, nombre } = req.query;
     
     let filter = {};
-    if (date) filter.fecha_ticket = date;
+    if (date) filter.fecha_ticket = new RegExp('^' + date);
     if (turno) filter.turno = turno;
     if (nombre) filter.empleado_nombre = new RegExp(nombre, 'i');
 
