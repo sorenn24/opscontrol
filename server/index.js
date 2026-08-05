@@ -95,7 +95,7 @@ app.get('*', (req, res) => {
 async function syncLeaderBranches() {
   const User = require('./models/User');
   const OFFICIAL_MAPPING = [
-    { name: 'César',      role: 'leader', pin: '1234', branches: ['LN2', 'INS', 'SMB', 'PL2', 'EC2', 'AVM'] },
+    { name: 'César',      role: 'leader', pin: '1234', branches: ['LN2', 'INS', 'SMB', 'PL1', 'PL2', 'EC2', 'AVM'] },
     { name: 'Soren',      role: 'leader', pin: '1234', branches: ['ORD', 'CUA'] },
     { name: 'Alessandro', role: 'leader', pin: '1234', branches: ['ROD', 'LNO'] },
     { name: 'Yessi',      role: 'leader', pin: '1234', branches: ['MTU', 'MTC', 'BTJ', 'RS2'] },

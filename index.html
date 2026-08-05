@@ -2420,7 +2420,7 @@
     if(!container) return;
     const { currentUser } = getState();
     const isAd = currentUser?.role === 'admin';
-    const allBranches = ['ORD','CUA','LN2','INS','SMB','PL2','EC2','AVM','ROD','LNO','MTU','MTC','BTJ','RS2','RCS','ANT'];
+    const allBranches = ['ORD','CUA','LN2','INS','SMB','PL1','PL2','EC2','AVM','ROD','LNO','MTU','MTC','BTJ','RS2','RCS','ANT'];
     const branches = isAd ? allBranches : (currentUser?.branches || []);
 
     const total = _vxPanelState.ventas.length;
