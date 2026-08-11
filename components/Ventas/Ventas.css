@@ -230,3 +230,14 @@ select.vx-input {
 .vx-lightbox-img { max-width: 95vw; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
 .vx-lightbox-close { position: absolute; top: 20px; right: 20px; color: white; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .vx-lightbox-close:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+
+/* ── Responsive para Panel Líder ── */
+@media (max-width: 600px) {
+  .vx-panel-header { flex-direction: column; align-items: stretch; margin-bottom: 16px; }
+  .vx-filters { flex-direction: column; width: 100%; gap: 10px; }
+  .vx-filters .vx-input { width: 100% !important; }
+  .vx-filters .btn { width: 100%; justify-content: center; }
+  .vx-kpi-container { flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .vx-grid { grid-template-columns: 1fr; gap: 16px; }
+  .vx-action-btn { padding: 10px 4px; font-size: 11px; }
+}
