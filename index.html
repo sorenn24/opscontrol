@@ -2437,7 +2437,10 @@
       employeeMap[name].count += 1;
     });
     const topEmployees = Object.values(employeeMap)
-      .sort((a, b) => b.count - a.count)
+      .sort((a, b) => {
+        if (b.count === a.count) return b.totalMonto - a.totalMonto;
+        return b.count - a.count;
+      })
       .slice(0, 10);
 
     container.innerHTML = `
