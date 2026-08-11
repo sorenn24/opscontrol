@@ -2426,6 +2426,20 @@
     const total = _vxPanelState.ventas.length;
     const sum = _vxPanelState.ventas.reduce((acc, v) => acc + (Number(v.monto) || 0), 0);
 
+    const employeeMap = {};
+    _vxPanelState.ventas.forEach(v => {
+      if (v.estado_validacion === 'RECHAZADO') return;
+      const name = `${v.empleado_nombre} ${v.empleado_apellido}`.trim();
+      if (!employeeMap[name]) {
+        employeeMap[name] = { name, sucursal: v.sucursal, totalMonto: 0, count: 0 };
+      }
+      employeeMap[name].totalMonto += (Number(v.monto) || 0);
+      employeeMap[name].count += 1;
+    });
+    const topEmployees = Object.values(employeeMap)
+      .sort((a, b) => b.totalMonto - a.totalMonto)
+      .slice(0, 10);
+
     container.innerHTML = `
       <div style="padding-top:16px;">
         <div class="vx-panel-header">
@@ -2456,6 +2470,27 @@
             <div class="vx-kpi-value">$${sum.toLocaleString('es-MX')}</div>
           </div>
         </div>
+
+        ${topEmployees.length > 0 ? `
+        <div class="vx-ranking-container" style="margin-bottom: 24px;">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🏆</span> Top 10 - Mejores Vendedores (Por Monto)
+          </h3>
+          <div style="background: linear-gradient(145deg, #ffffff, #f9fafb); border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); padding: 16px; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); overflow-x: auto; scrollbar-width: thin;">
+            <div style="display: flex; gap: 16px; min-width: max-content; padding-bottom: 8px;">
+              ${topEmployees.map((emp, idx) => `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: ${idx === 0 ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : idx === 1 ? 'linear-gradient(135deg, #f3f4f6, #e5e7eb)' : idx === 2 ? 'linear-gradient(135deg, #ffedd5, #fed7aa)' : '#ffffff'}; border: 1px solid ${idx < 3 ? 'transparent' : 'rgba(0,0,0,0.05)'}; padding: 16px 24px; border-radius: 12px; min-width: 150px; position: relative; box-shadow: ${idx < 3 ? '0 4px 12px rgba(0,0,0,0.08)' : '0 2px 4px rgba(0,0,0,0.02)'}; transition: transform 0.2s;">
+                  ${idx < 3 ? `<div style="position: absolute; top: -12px; font-size: 24px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>` : `<div style="position: absolute; top: -8px; left: -8px; background: var(--color-primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">${idx+1}</div>`}
+                  <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: ${idx < 3 ? '8px' : '0'}; text-align: center;">${emp.name}</div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">${emp.sucursal}</div>
+                  <div style="font-size: 18px; font-weight: 900; color: var(--color-primary); margin-bottom: 6px;">$${emp.totalMonto.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--text-secondary); background: rgba(0,0,0,0.06); padding: 4px 8px; border-radius: 6px;">${emp.count} tickets</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+        ` : ''}
 
         ${_vxPanelState.loading ? `<div style="text-align:center;padding:40px;"><div class="spinner"></div></div>` : ''}
 
