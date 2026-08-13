@@ -78,11 +78,41 @@ router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
       }
     }
 
-    const ventas = await VentaExtraordinaria.find(filter).sort({ createdAt: -1 });
+    const ventas = await VentaExtraordinaria.find(filter).select('-foto_base64').sort({ createdAt: -1 });
     return res.json({ success: true, ventas });
   } catch (err) {
     console.error('[ventas/get]', err);
     return res.status(500).json({ error: 'Error al obtener las ventas extraordinarias.' });
+  }
+});
+
+// ── GET /api/ventas/:id/image ──────────────────────────────────────
+router.get('/:id/image', requireAuth, checkLeaderAccess, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const venta = await VentaExtraordinaria.findById(id).select('foto_base64 sucursal');
+    if (!venta || !venta.foto_base64) {
+      return res.status(404).send('Imagen no encontrada.');
+    }
+
+    if (req.session.userRole !== 'admin' && !req.userBranches.includes(venta.sucursal)) {
+      return res.status(403).send('No tienes permiso para ver esta imagen.');
+    }
+
+    const matches = venta.foto_base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).send('Datos de imagen inválidos.');
+    }
+
+    const type = matches[1];
+    const data = Buffer.from(matches[2], 'base64');
+
+    res.set('Content-Type', type);
+    res.set('Cache-Control', 'public, max-age=86400'); // Cache de 1 día
+    return res.send(data);
+  } catch (err) {
+    console.error('[ventas/image]', err);
+    return res.status(500).send('Error al obtener la imagen.');
   }
 });
 

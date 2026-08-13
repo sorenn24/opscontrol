@@ -2511,8 +2511,8 @@
                 <span style="font-size:12px;font-weight:600;">${v.sucursal} - ${v.turno}</span>
                 <span class="vx-card-badge ${v.estado_validacion}">${v.estado_validacion}</span>
               </div>
-              <div class="vx-card-img-wrapper" data-img="${v.foto_base64}">
-                <img src="${v.foto_base64}" class="vx-card-img" />
+              <div class="vx-card-img-wrapper" data-img="/api/ventas/${v._id}/image">
+                <img src="/api/ventas/${v._id}/image" loading="lazy" class="vx-card-img" />
                 <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;padding:4px;border-radius:4px;">${icon('eye',14)}</div>
               </div>
               <div class="vx-card-body">
