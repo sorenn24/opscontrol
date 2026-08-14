@@ -90,6 +90,7 @@ router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
 router.get('/:id/image', requireAuth, checkLeaderAccess, async (req, res) => {
   try {
     const { id } = req.params;
+    const { full } = req.query;
     const venta = await VentaExtraordinaria.findById(id).select('foto_base64 sucursal');
     if (!venta || !venta.foto_base64) {
       return res.status(404).send('Imagen no encontrada.');
@@ -104,12 +105,23 @@ router.get('/:id/image', requireAuth, checkLeaderAccess, async (req, res) => {
       return res.status(400).send('Datos de imagen inválidos.');
     }
 
-    const type = matches[1];
     const data = Buffer.from(matches[2], 'base64');
 
-    res.set('Content-Type', type);
-    res.set('Cache-Control', 'public, max-age=86400'); // Cache de 1 día
-    return res.send(data);
+    if (full === 'true') {
+      res.set('Content-Type', matches[1]);
+      res.set('Cache-Control', 'public, max-age=604800'); // Cache de 7 días
+      return res.send(data);
+    } else {
+      const sharp = require('sharp');
+      const optimizedImage = await sharp(data)
+        .resize({ width: 400, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+
+      res.set('Content-Type', 'image/webp');
+      res.set('Cache-Control', 'public, max-age=604800'); // Cache de 7 días
+      return res.send(optimizedImage);
+    }
   } catch (err) {
     console.error('[ventas/image]', err);
     return res.status(500).send('Error al obtener la imagen.');

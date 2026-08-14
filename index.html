@@ -2547,7 +2547,7 @@
           modal.innerHTML = `
             <div class="vx-lightbox">
               <button class="vx-lightbox-close">${icon('close',24)}</button>
-              <img src="${w.dataset.img}" class="vx-lightbox-img" />
+              <img src="${w.dataset.img}?full=true" class="vx-lightbox-img" />
             </div>
           `;
           modal.querySelector('.vx-lightbox-close').addEventListener('click', () => modal.innerHTML = '');
