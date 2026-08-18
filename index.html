@@ -2380,18 +2380,14 @@
   }
 
   // ============================================================
-  let _vxPanelState = { ventas: [], loading: false, date: todayKey().substring(0, 7), day: '', sucursal: '', turno: '', nombre: '' };
+  let _vxPanelState = { ventas: [], loading: false, date: todayKey().substring(0, 7), mode: 'month', sucursal: '', turno: '', nombre: '' };
 
   async function mountVxPanel(container) {
     if(!container) return;
     _vxPanelState.loading = true;
     _renderVxPanel(container);
     try {
-      let queryDate = _vxPanelState.date;
-      if (_vxPanelState.day) {
-        queryDate = `${_vxPanelState.date}-${_vxPanelState.day.toString().padStart(2, '0')}`;
-      }
-      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: queryDate, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno, nombre: _vxPanelState.nombre });
+      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: _vxPanelState.date, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno, nombre: _vxPanelState.nombre });
     } catch(e) { console.error(e); }
     _vxPanelState.loading = false;
     _renderVxPanel(container);
@@ -2451,8 +2447,11 @@
       <div style="padding-top:16px;">
         <div class="vx-panel-header">
           <div class="vx-filters" style="display:flex; flex-wrap:wrap; gap:8px;">
-            <input type="month" id="vx-filter-date" class="vx-input" title="Mes" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
-            <input type="number" id="vx-filter-day" class="vx-input" title="Día (Opcional)" placeholder="Día" min="1" max="31" style="height:36px;padding:0 12px;width:70px;" value="${_vxPanelState.day}">
+            <select id="vx-date-mode" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
+              <option value="month" ${_vxPanelState.mode==='month'?'selected':''}>Por Mes</option>
+              <option value="date" ${_vxPanelState.mode==='date'?'selected':''}>Día Exacto</option>
+            </select>
+            <input type="${_vxPanelState.mode}" id="vx-filter-date" class="vx-input" title="Fecha" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
             <select id="vx-filter-suc" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
               <option value="">Todas las sucursales</option>
               ${branches.map(b => `<option value="${b}" ${_vxPanelState.sucursal===b?'selected':''}>${b}</option>`).join('')}
@@ -2537,9 +2536,18 @@
       <div id="vx-modal-root"></div>
     `;
 
+    document.getElementById('vx-date-mode')?.addEventListener('change', (e) => {
+      const mode = e.target.value;
+      _vxPanelState.mode = mode;
+      const dateInput = document.getElementById('vx-filter-date');
+      dateInput.type = mode;
+      // Reset value slightly to fit the new format if switching
+      if (mode === 'month') dateInput.value = todayKey().substring(0, 7);
+      else dateInput.value = todayKey();
+    });
+
     document.getElementById('vx-filter-btn')?.addEventListener('click', () => {
       _vxPanelState.date = document.getElementById('vx-filter-date').value;
-      _vxPanelState.day = document.getElementById('vx-filter-day').value;
       _vxPanelState.sucursal = document.getElementById('vx-filter-suc').value;
       _vxPanelState.turno = document.getElementById('vx-filter-tur').value;
       _vxPanelState.nombre = document.getElementById('vx-filter-nom').value.trim();
