@@ -2518,7 +2518,7 @@
               <div class="vx-card-body">
                 <div class="vx-card-title">${v.empleado_nombre} ${v.empleado_apellido}</div>
                 <div class="vx-card-monto" style="font-size: 16px; font-weight: 700; word-break: break-all;">$${Number(v.monto).toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
-                <div class="vx-card-meta">Registrado: ${new Date(v.createdAt).toLocaleTimeString()}</div>
+                <div class="vx-card-meta">📅 Ticket: <strong>${v.fecha_ticket}</strong> <span style="margin: 0 4px; color: var(--border-default);">|</span> 🕒 Subido: ${new Date(v.createdAt).toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'})}</div>
               </div>
               <div class="vx-card-actions">
                 <button class="vx-action-btn validar" data-id="${v._id}" ${v.estado_validacion==='VALIDADO'?'disabled style="opacity:0.5"':''}>${icon('check',14)}</button>
