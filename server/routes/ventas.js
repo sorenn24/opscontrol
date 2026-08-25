@@ -47,6 +47,31 @@ router.post('/', async (req, res) => {
     });
 
     await nuevaVenta.save();
+
+    // ── Enviar datos a Google Sheets (Webhook) ──
+    try {
+      const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const sheetData = {
+        fecha_ticket: fecha_ticket,
+        sucursal: sucursal,
+        turno: turno,
+        empleado: `${empleado_nombre} ${empleado_apellido}`.trim(),
+        monto: monto,
+        foto_url: `${baseUrl}/api/ventas/${nuevaVenta._id}/image`,
+        fecha_registro: new Date().toLocaleString('es-MX')
+      };
+      
+      // Enviamos la petición asíncrona sin bloquear al usuario
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sheetData)
+      }).catch(err => console.error('[ventas/googleSheets] Fetch Error:', err));
+    } catch (sheetErr) {
+      console.error('[ventas/googleSheets] Setup Error:', sheetErr);
+    }
+
     return res.json({ success: true, venta: nuevaVenta });
   } catch (err) {
     console.error('[ventas/create]', err);
@@ -83,6 +108,52 @@ router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
   } catch (err) {
     console.error('[ventas/get]', err);
     return res.status(500).json({ error: 'Error al obtener las ventas extraordinarias.' });
+  }
+});
+
+// ── GET /api/ventas/trigger-sync (Admin) ───────────────────────────────
+router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => {
+  if (req.session.userRole !== 'admin') {
+    return res.status(403).send('No tienes permisos. Solo administrador.');
+  }
+  
+  try {
+    const ventas = await VentaExtraordinaria.find({}).sort({ createdAt: 1 });
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    // Devolvemos el mensaje rápido para que la pantalla no se quede cargando
+    res.send(`<h1>Iniciando sincronización...</h1><p>Se enviarán ${ventas.length} registros a Google Sheets en segundo plano.</p><p>Esto tomará aproximadamente ${Math.round(ventas.length * 0.6 / 60)} minutos.</p><script>setTimeout(()=>window.close(), 3000)</script>`);
+
+    // Proceso asíncrono en background
+    (async () => {
+      let successCount = 0;
+      for (let i = 0; i < ventas.length; i++) {
+        const v = ventas[i];
+        const sheetData = {
+          fecha_ticket: v.fecha_ticket || '',
+          sucursal: v.sucursal || '',
+          turno: v.turno || '',
+          empleado: `${v.empleado_nombre} ${v.empleado_apellido}`.trim(),
+          monto: v.monto || 0,
+          foto_url: `${baseUrl}/api/ventas/${v._id}/image`,
+          fecha_registro: new Date(v.createdAt).toLocaleString('es-MX')
+        };
+        try {
+          const resp = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sheetData)
+          });
+          if (resp.ok) successCount++;
+        } catch (err) { console.error('Error enviando a sheets:', err); }
+        
+        await new Promise(r => setTimeout(r, 600)); // 0.6 seg por petición
+      }
+      console.log(`[Google Sheets] Sincronización completada: ${successCount} registros enviados.`);
+    })();
+  } catch (err) {
+    return res.status(500).send('Error al iniciar la sincronización.');
   }
 });
 
