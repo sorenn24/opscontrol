@@ -118,7 +118,8 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
   }
   
   try {
-    const ventas = await VentaExtraordinaria.find({}).sort({ createdAt: 1 });
+    // Excluir foto_base64 para no exceder el límite de memoria de 32MB de MongoDB al ordenar
+    const ventas = await VentaExtraordinaria.find({}).select('-foto_base64').sort({ createdAt: 1 });
     const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     
