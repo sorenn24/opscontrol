@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
 
     // ── Enviar datos a Google Sheets (Webhook) ──
     try {
-      const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+      const webhookUrl = 'https://script.google.com/macros/s/AKfycbyziTz7xRbzQrcjCT7_u0iMQSGE0qojp4EEGO-tLFZr4HIJQ8zESUvzScTcfG4PDwvT/exec';
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const sheetData = {
         fecha_ticket: fecha_ticket,
@@ -120,7 +120,7 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
   try {
     // Excluir foto_base64 para no exceder el límite de memoria de 32MB de MongoDB al ordenar
     const ventas = await VentaExtraordinaria.find({}).select('-foto_base64').sort({ createdAt: 1 });
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbyziTz7xRbzQrcjCT7_u0iMQSGE0qojp4EEGO-tLFZr4HIJQ8zESUvzScTcfG4PDwvT/exec';
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     
     // Devolvemos el mensaje rápido para que la pantalla no se quede cargando
@@ -163,7 +163,7 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
 router.get('/test-sheets', requireAuth, checkLeaderAccess, async (req, res) => {
   if (req.session.userRole !== 'admin') return res.status(403).send('No tienes permisos.');
   try {
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbyziTz7xRbzQrcjCT7_u0iMQSGE0qojp4EEGO-tLFZr4HIJQ8zESUvzScTcfG4PDwvT/exec';
     const testData = {
       fecha_ticket: "2026-08-24",
       sucursal: "TEST",
