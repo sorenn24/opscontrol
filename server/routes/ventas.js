@@ -159,6 +159,43 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
   }
 });
 
+// ── GET /api/ventas/test-sheets (Admin) ──────────────────────────────
+router.get('/test-sheets', requireAuth, checkLeaderAccess, async (req, res) => {
+  if (req.session.userRole !== 'admin') return res.status(403).send('No tienes permisos.');
+  try {
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbywfvMgKaYfKnoBuk6Rs4xshWLrvsstDaGh_PqyzC-tIInBhRpasdfOf4i74-x7sCKP/exec';
+    const testData = {
+      fecha_ticket: "2026-08-24",
+      sucursal: "TEST",
+      turno: "T1",
+      empleado: "Robot Prueba",
+      monto: 999,
+      foto_url: "https://test.com/foto",
+      fecha_registro: new Date().toLocaleString('es-MX')
+    };
+
+    const resp = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(testData)
+    });
+    
+    const text = await resp.text();
+    
+    res.send(`
+      <h1>Diagnóstico de Google Sheets</h1>
+      <p><b>Status de respuesta:</b> ${resp.status} ${resp.statusText}</p>
+      <p>Si la respuesta de abajo dice "status: success", significa que ya debería aparecer en tu hoja de Excel.</p>
+      <p>Si sale un código enorme de HTML, significa que olvidaste poner que "Cualquier Persona" tenga acceso al Webhook.</p>
+      <hr>
+      <h3>Respuesta cruda de Google:</h3>
+      <pre style="background:#222;color:#0f0;padding:15px;white-space:pre-wrap;">${text.replace(/</g, '&lt;')}</pre>
+    `);
+  } catch (err) {
+    res.status(500).send(`<h1>Error técnico:</h1><p>${err.message}</p>`);
+  }
+});
+
 // ── GET /api/ventas/:id/image ──────────────────────────────────────
 router.get('/:id/image', requireAuth, checkLeaderAccess, async (req, res) => {
   try {
