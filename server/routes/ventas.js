@@ -118,13 +118,14 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
   }
   
   try {
+    const skipCount = parseInt(req.query.skip) || 0;
     // Excluir foto_base64 para no exceder el límite de memoria de 32MB de MongoDB al ordenar
-    const ventas = await VentaExtraordinaria.find({}).select('-foto_base64').sort({ createdAt: 1 });
+    const ventas = await VentaExtraordinaria.find({}).select('-foto_base64').sort({ createdAt: 1 }).skip(skipCount);
     const webhookUrl = 'https://script.google.com/macros/s/AKfycbyziTz7xRbzQrcjCT7_u0iMQSGE0qojp4EEGO-tLFZr4HIJQ8zESUvzScTcfG4PDwvT/exec';
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     
     // Devolvemos el mensaje rápido para que la pantalla no se quede cargando
-    res.send(`<h1>Iniciando sincronización...</h1><p>Se enviarán ${ventas.length} registros a Google Sheets en segundo plano.</p><p>Esto tomará aproximadamente ${Math.round(ventas.length * 0.6 / 60)} minutos.</p><script>setTimeout(()=>window.close(), 3000)</script>`);
+    res.send(`<h1>Iniciando sincronización...</h1><p>Saltando los primeros ${skipCount} registros.</p><p>Se enviarán los ${ventas.length} registros restantes a Google Sheets en segundo plano.</p><script>setTimeout(()=>window.close(), 3500)</script>`);
 
     // Proceso asíncrono en background
     (async () => {
