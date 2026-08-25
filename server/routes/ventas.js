@@ -153,7 +153,8 @@ router.get('/trigger-sync', requireAuth, checkLeaderAccess, async (req, res) => 
       console.log(`[Google Sheets] Sincronización completada: ${successCount} registros enviados.`);
     })();
   } catch (err) {
-    return res.status(500).send('Error al iniciar la sincronización.');
+    console.error('Error sincronizacion profunda:', err);
+    return res.status(500).send(`<h1>Error al iniciar la sincronización</h1><p>${err.message}</p><p>${err.stack}</p>`);
   }
 });
 
