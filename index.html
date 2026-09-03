@@ -2360,13 +2360,15 @@
           foto_base64: _vxState.foto_base64
         });
         container.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px;">
-            <img src="/assets/mascot.png" alt="Mascota" style="width: 140px; margin-bottom: -2px; position: relative; z-index: 1; user-select: none;">
-            <div class="vx-form-container" style="text-align:center; position: relative; z-index: 2; width: 100%; max-width: 400px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
-              <div style="color:var(--color-success); margin-bottom:16px;">${icon('checkCircle',56)}</div>
-              <h2 class="vx-login-title" style="margin-bottom: 8px;">¡Venta Registrada!</h2>
-              <p style="color:var(--text-secondary); font-size:15px; margin-bottom:32px;">Tu ticket ha sido enviado exitosamente para validación.</p>
-              <button class="vx-btn-primary" onclick="mountVxLogin(document.getElementById('root'))">Registrar otro ticket</button>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px 20px 20px;">
+            <div class="vx-form-container" style="text-align:center; position: relative; margin-top: 0;">
+              <!-- Mascota con position absolute para que descanse exactamente sobre el borde superior -->
+              <img src="/assets/mascot.png" alt="Mascota" style="position: absolute; top: 2px; left: 50%; transform: translate(-50%, -100%); width: 150px; z-index: -1; user-select: none;">
+              
+              <div style="color:var(--color-success); margin-bottom:16px; position: relative; z-index: 2;">${icon('checkCircle',64)}</div>
+              <h2 class="vx-login-title" style="margin-bottom: 8px; position: relative; z-index: 2;">¡Venta Registrada!</h2>
+              <p style="color:var(--text-secondary); font-size:15px; margin-bottom:32px; position: relative; z-index: 2;">Tu ticket ha sido enviado exitosamente para validación.</p>
+              <button class="vx-btn-primary" style="position: relative; z-index: 2;" onclick="mountVxLogin(document.getElementById('root'))">Registrar otro ticket</button>
             </div>
           </div>
         `;
