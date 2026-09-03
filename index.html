@@ -2362,8 +2362,8 @@
         container.innerHTML = `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 100px 20px 40px 20px;">
             <div class="vx-form-container" style="text-align:center; position: relative; margin-top: 0;">
-              <!-- Mascota con offset para ignorar el espacio transparente de la imagen original -->
-              <img src="/assets/mascot.png" alt="Mascota" style="position: absolute; top: 38px; left: 50%; transform: translate(-50%, -100%); width: 180px; z-index: -1; user-select: none; pointer-events: none;">
+              <!-- Mascota con z-index positivo para que los dedos queden por enfrente -->
+              <img src="/assets/mascot.png" alt="Mascota" style="position: absolute; top: 22px; left: 50%; transform: translate(-50%, -100%); width: 180px; z-index: 10; user-select: none; pointer-events: none;">
               
               <div style="color:var(--color-success); margin-bottom:16px; position: relative; z-index: 2;">${icon('checkCircle',64)}</div>
               <h2 class="vx-login-title" style="margin-bottom: 8px; position: relative; z-index: 2;">¡Venta Registrada!</h2>
