@@ -2385,14 +2385,14 @@
   }
 
   // ============================================================
-  let _vxPanelState = { ventas: [], loading: false, date: todayKey().substring(0, 7), mode: 'month', sucursal: '', turno: '', nombre: '' };
+  let _vxPanelState = { ventas: [], loading: false, date: todayKey().substring(0, 7), mode: 'month', sucursal: '', turno: '', nombre: '', zona: '' };
 
   async function mountVxPanel(container) {
     if(!container) return;
     _vxPanelState.loading = true;
     _renderVxPanel(container);
     try {
-      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: _vxPanelState.date, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno, nombre: _vxPanelState.nombre });
+      _vxPanelState.ventas = await apiGetVentasExtraordinarias({ date: _vxPanelState.date, sucursal: _vxPanelState.sucursal, turno: _vxPanelState.turno, nombre: _vxPanelState.nombre, zona: _vxPanelState.zona });
     } catch(e) { console.error(e); }
     _vxPanelState.loading = false;
     _renderVxPanel(container);
@@ -2457,6 +2457,15 @@
               <option value="date" ${_vxPanelState.mode==='date'?'selected':''}>Día Exacto</option>
             </select>
             <input type="${_vxPanelState.mode}" id="vx-filter-date" class="vx-input" title="Fecha" style="height:36px;padding:0 12px;width:auto;" value="${_vxPanelState.date}">
+            ${isAd ? `
+            <select id="vx-filter-zona" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
+              <option value="">Todas las zonas</option>
+              <option value="Santa Catarina" ${_vxPanelState.zona==='Santa Catarina'?'selected':''}>Z. Santa Catarina</option>
+              <option value="Monterrey" ${_vxPanelState.zona==='Monterrey'?'selected':''}>Z. Monterrey</option>
+              <option value="Escobedo" ${_vxPanelState.zona==='Escobedo'?'selected':''}>Z. Escobedo</option>
+              <option value="Guadalupe" ${_vxPanelState.zona==='Guadalupe'?'selected':''}>Z. Guadalupe</option>
+            </select>
+            ` : ''}
             <select id="vx-filter-suc" class="vx-input" style="height:36px;padding:0 12px;width:auto;padding-right:32px;background-position:right 8px center;">
               <option value="">Todas las sucursales</option>
               ${branches.map(b => `<option value="${b}" ${_vxPanelState.sucursal===b?'selected':''}>${b}</option>`).join('')}
@@ -2553,6 +2562,7 @@
 
     document.getElementById('vx-filter-btn')?.addEventListener('click', () => {
       _vxPanelState.date = document.getElementById('vx-filter-date').value;
+      _vxPanelState.zona = document.getElementById('vx-filter-zona')?.value || '';
       _vxPanelState.sucursal = document.getElementById('vx-filter-suc').value;
       _vxPanelState.turno = document.getElementById('vx-filter-tur').value;
       _vxPanelState.nombre = document.getElementById('vx-filter-nom').value.trim();

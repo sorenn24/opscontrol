@@ -82,21 +82,40 @@ router.post('/', async (req, res) => {
 // ── GET /api/ventas (Líderes/Admin) ───────────────────────────────
 router.get('/', requireAuth, checkLeaderAccess, async (req, res) => {
   try {
-    const { date, sucursal, turno, nombre } = req.query;
+    const { date, sucursal, turno, nombre, zona } = req.query;
     
     let filter = {};
     if (date) filter.fecha_ticket = new RegExp('^' + date);
     if (turno) filter.turno = turno;
     if (nombre) filter.empleado_nombre = new RegExp(nombre, 'i');
 
-    // Admin can see all, leaders only their branches
+    const zonasMap = {
+      'Santa Catarina': ['ORD', 'CUA'],
+      'Monterrey': ['ROD', 'LNO', 'RCS', 'ANT', 'SMB', 'INS', 'LN2'],
+      'Escobedo': ['RS2', 'MTU', 'MTC'],
+      'Guadalupe': ['AVM', 'EC2', 'PL1', 'PL2', 'BTJ']
+    };
+
     if (req.session.userRole !== 'admin') {
       filter.sucursal = { $in: req.userBranches };
+    }
+    
+    if (zona && zonasMap[zona]) {
+      if (req.session.userRole === 'admin') {
+        filter.sucursal = { $in: zonasMap[zona] };
+      } else {
+        const validBranches = req.userBranches.filter(b => zonasMap[zona].includes(b));
+        if (validBranches.length === 0) return res.json({ success: true, ventas: [] });
+        filter.sucursal = { $in: validBranches };
+      }
     }
     
     // If a specific sucursal is filtered by the user, and they have access to it:
     if (sucursal) {
       if (req.session.userRole === 'admin' || req.userBranches.includes(sucursal)) {
+        if (zona && zonasMap[zona] && !zonasMap[zona].includes(sucursal)) {
+          return res.json({ success: true, ventas: [] });
+        }
         filter.sucursal = sucursal;
       } else {
         return res.json({ success: true, ventas: [] }); // No access
