@@ -2359,15 +2359,127 @@
           monto: Number(_vxState.monto),
           foto_base64: _vxState.foto_base64
         });
+
+        const montoVenta = Number(_vxState.monto);
+        const nom = _vxState.nombre.split(' ')[0]; // Usar solo el primer nombre
+        let arrayElegido = [];
+
+        if (montoVenta >= 1300) {
+          arrayElegido = [
+            `¡NIVEL DIOS ALCANZADO ${nom}! 🌟 Esta venta pasará a la historia. 🏛️`,
+            `¡BRUTAL! Has destrozado la gráfica, ${nom}. 🦖💥`,
+            `¡Felicidades Leyenda! Vender tanto es de otro planeta, ${nom}. 🛸👽`,
+            `¡Simplemente ESPECTACULAR! Hoy demostraste quién manda, ${nom}. 👑🔥`,
+            `¡Venta Galáctica! Te fuiste a las estrellas, ${nom}. 🌌🚀`,
+            `¡${nom} ha hackeado el sistema! Qué cantidad tan irreal. 💻👾`,
+            `¡TITÁN DE LAS VENTAS! ${nom} aplastando la meta. 🦾`,
+            `¡Reverencia para ${nom}! Un ticket que deja sin palabras. 🙇‍♂️`,
+            `¡Monstruoso! Nadie vende como tú, ${nom}. 🐲`,
+            `¡El Olimpo de las ventas tiene a ${nom}! ⚡🏔️`
+          ];
+        } else if (montoVenta >= 1100) {
+          arrayElegido = [
+            `¡Nivel Maestro ${nom}! Más de mil pesos en un solo ticket. 👑💰`,
+            `¡Estás rompiendo todos los récords ${nom}! 🤯`,
+            `¡WOW! ${nom} es oficialmente una máquina de vender. 🤖💯`,
+            `¡Qué barbaridad ${nom}! No hay quien te pare. 💎`,
+            `¡El club de los 4 dígitos! Felicidades, ${nom}. 🎩`,
+            `¡Venta Colosal! Eres una fuerza de la naturaleza, ${nom}. 🌪️`,
+            `¡Millar superado! Felicidades por este hito, ${nom}. 🏔️`,
+            `¡Ticket de Oro! Qué bárbaro, ${nom}. 🥇`,
+            `¡Estás en fuego, ${nom}! Literalmente quemando la caja. 🔥🚒`,
+            `¡Una venta magistral, ${nom}! Mis respetos. 🎩👌`
+          ];
+        } else if (montoVenta >= 900) {
+          arrayElegido = [
+            `¡Impresionante ${nom}! Ya estás en las grandes ligas. ⚾🏆`,
+            `¡Qué chulada de venta! Nos dejaste con el ojo cuadrado, ${nom}. 👀🔥`,
+            `¡CASI EL MILLAR! Mereces aplausos, ${nom}. 👏`,
+            `¡Andas imparable hoy ${nom}! 🚀🌟`,
+            `¡Cerca de los 4 dígitos! Qué joya de ticket, ${nom}. 💍`,
+            `¡Venta ÉPICA! Eres un crack, ${nom}. ⚡`,
+            `¡Nivelazo ${nom}! Esta venta es para enmarcarla. 🖼️`,
+            `¡Dando cátedra de ventas, ${nom}! 👨‍🏫`,
+            `¡Te luciste ${nom}! Qué pedazo de ticket. 🥩`,
+            `¡Súper venta! Eres un orgullo para el equipo, ${nom}. 🦁`,
+            `¡Impresionante cantidad, ${nom}! 🤑`,
+            `¡Rozando los mil pesos! Bien hecho ${nom}. 🎯`,
+            `¡Qué poder de venta tienes, ${nom}! 🦸‍♂️`,
+            `¡Fenomenal ${nom}! Un ticket que marca la diferencia. ☄️`,
+            `¡Magia pura en las ventas, ${nom}! 🧙‍♂️`
+          ];
+        } else if (montoVenta >= 700) {
+          arrayElegido = [
+            `¡Ufff ${nom}! Ya estamos subiendo de nivel. 📈`,
+            `¡Eso es todo ${nom}! Sumaste en grande. 💸`,
+            `¡Ojo aquí! ${nom} se aventó una venta muy top. 🤩`,
+            `¡Buenísima cantidad ${nom}! Se nota cuando le echas ganas. ✨`,
+            `¡Qué buena cifra, ${nom}! Felicidades. 🍾`,
+            `¡Wow ${nom}! Esta venta sí que destaca. 🌟`,
+            `¡Excelente ticket de alto valor, ${nom}! 💎`,
+            `¡Rompiendo la barrera de los 700, bien ahí ${nom}! 🚀`,
+            `¡Subiendo el promedio! Gracias ${nom}. 📊`,
+            `¡Qué ticket tan jugoso, ${nom}! 🧃`,
+            `¡Esa es una venta de peso, ${nom}! 🏋️‍♂️`,
+            `¡Felicidades ${nom}! Se nota tu poder de convencimiento. 🗣️`,
+            `¡Venta Premium desbloqueada por ${nom}! 🔓`,
+            `¡Excelente nivel de venta, ${nom}! 🏅`,
+            `¡Te volaste la barda con esta, ${nom}! 🏟️`
+          ];
+        } else {
+          // Ventas base (menores a 700)
+          arrayElegido = [
+            `¡Excelente trabajo, ${nom}! Sigue así. 🚀`,
+            `¡Boom! Otra venta exitosa a la cuenta, ${nom}. 💥`,
+            `Tu esfuerzo hace la diferencia, ¡gracias ${nom}! 🙌`,
+            `¡Imparable ${nom}! Tu ticket ya está en validación. ⚡`,
+            `¡Genial ${nom}! Vas por un excelente camino. 🌟`,
+            `Cada venta cuenta, ¡gran trabajo ${nom}! 💪`,
+            `¡Muy bien hecho ${nom}! Súmale otra al marcador. 🎯`,
+            `¡Buenísima venta ${nom}! A seguir rompiéndola. 🔥`,
+            `¡Eso es todo ${nom}! Seguimos sumando. 👏`,
+            `¡Qué buen ritmo traes, ${nom}! No le aflojes. 🏃‍♂️💨`,
+            `¡Anotada, ${nom}! Directo a tus métricas. 📊`,
+            `¡Excelente ${nom}! Tu dedicación se nota. 💯`,
+            `¡Felicidades ${nom}! Un ticket más para brillar. ✨`,
+            `¡Con todo ${nom}! Esa es la actitud ganadora. 🏆`,
+            `¡Registrada con éxito, ${nom}! ✅`,
+            `¡Venta asegurada! Bien bajado ese balón, ${nom}. ⚽`,
+            `¡Qué buena venta ${nom}! Sigue con esa energía. 🔋`,
+            `¡Sumando victorias, ${nom}! 🏅`,
+            `¡Pim, pam, pum! Otra venta de ${nom}. 🥊`,
+            `¡Chulada de venta, ${nom}! A por la siguiente. 🏃‍♀️`,
+            `¡No hay quien te pare hoy, ${nom}! 🚀`,
+            `¡Ticket arriba! Gracias por tu esfuerzo, ${nom}. 📈`,
+            `¡Eres grande ${nom}! Excelente registro. 🐘`,
+            `¡Venta confirmada! Qué buen trabajo, ${nom}. 🤝`,
+            `¡Vientos ${nom}! Seguimos con la racha. 🌪️`,
+            `¡Un éxito más para ${nom}! 🎉`,
+            `¡Bien logrado, ${nom}! 🎈`,
+            `¡Excelente aporte, ${nom}! 🧩`,
+            `¡Qué bárbaro ${nom}! Sigue vendiendo así. 🛍️`,
+            `¡Misión cumplida, ${nom}! 🕵️‍♂️`
+          ];
+        }
+
+        const mensajeMotivacional = arrayElegido[Math.floor(Math.random() * arrayElegido.length)];
+
         container.innerHTML = `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 100px 20px 40px 20px;">
             <div class="vx-form-container" style="text-align:center; position: relative; margin-top: 0;">
               <!-- Mascota con z-index positivo para que los dedos queden por enfrente -->
               <img src="/assets/mascot.png" alt="Mascota" style="position: absolute; top: 22px; left: 50%; transform: translate(-50%, -100%); width: 180px; z-index: 10; user-select: none; pointer-events: none;">
               
-              <div style="color:var(--color-success); margin-bottom:16px; position: relative; z-index: 2;">${icon('checkCircle',64)}</div>
-              <h2 class="vx-login-title" style="margin-bottom: 8px; position: relative; z-index: 2;">¡Venta Registrada!</h2>
-              <p style="color:var(--text-secondary); font-size:15px; margin-bottom:32px; position: relative; z-index: 2;">Tu ticket ha sido enviado exitosamente para validación.</p>
+              <div style="color:var(--color-success); margin-bottom:12px; position: relative; z-index: 2;">${icon('checkCircle',64)}</div>
+              <h2 class="vx-login-title" style="margin-bottom: 6px; position: relative; z-index: 2;">¡Venta Registrada!</h2>
+              
+              <!-- Mensaje Motivacional -->
+              <p style="color: var(--color-primary); font-size: 16px; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 2; line-height: 1.4;">
+                ${mensajeMotivacional}
+              </p>
+              
+              <p style="color:var(--text-secondary); font-size:13px; margin-bottom:32px; position: relative; z-index: 2;">Tu ticket ha sido enviado exitosamente para validación.</p>
+              
               <button class="vx-btn-primary" style="position: relative; z-index: 2;" onclick="mountVxLogin(document.getElementById('root'))">Registrar otro ticket</button>
             </div>
           </div>
