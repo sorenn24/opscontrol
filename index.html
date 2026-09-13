@@ -2360,106 +2360,108 @@
           foto_base64: _vxState.foto_base64
         });
 
-        const montoVenta = Number(_vxState.monto);
+                const montoVenta = Number(_vxState.monto);
         const nom = _vxState.nombre.split(' ')[0]; // Usar solo el primer nombre
+        
+        const popTier5 = [
+          "¡¿Alguien por favor quiere pensar en los niños?! Porque este sablazo dejó sin herencia a alguien. — Helena Alegría",
+          "¡No lloren por mí, ya estoy muerto! Dijo el saldo de la tarjeta del cliente. — Barney Gómez",
+          "¡Maldito seas, Perry el Ornitorrinco! Nadie en toda el Área Limítrofe puede superar ese cobro. — Dr. Doofenshmirtz",
+          "El Señor Barriga vino a cobrar la renta, vio tu ticket y hasta nos perdonó catorce meses. — Don Ramón",
+          "¡El Tripaseca y el Cuajinais huyeron despavoridos al ver la tremenda cifra que registraste. — El Chapulín Colorado",
+          "¡Tragaldabas! Te devoraste la meta del turno de un solo bocado sin dejarle nada a nadie. — Federica P. Luche",
+          "Kowalski, informe de daños: la cartera del cliente no sobrevivió al impacto. — Skipper",
+          "Yo soy... inevitable. Y este cobro descomunal en el sistema también. — Thanos",
+          "Miré 14 millones de futuros y solo en uno caía un ticket tan pesado como este. — Doctor Strange",
+          "¡Liberen al Kraken! Porque la base de datos ya no aguanta semejante tonelaje de venta. — Davy Jones",
+          "Experimento 626 activado: a prueba de fuego, a prueba de balas y diseñado para romper metas. — Dr. Jumba",
+          "La cucaracha sobrevivió a todo... pero la cartera del cliente no aguantó este impacto. — WALL-E",
+          "¡Su nivel de venta es de más de 9,000! El rastreador explotó. — Vegeta",
+          "¡El billete número un millón! Don Cangrejo ya lo mandó a enmarcar en oro puro. — Don Cangrejo"
+        ];
+
+        const popTier4 = [
+          "¡Excelente! Suelte a los sabuesos... pero para festejar semejante cobro. — Sr. Burns",
+          "¡Contemplen mi más grande y malvada creación: el Venta-Inator 3000! — Dr. Doofenshmirtz",
+          "¡Acúsalo con tu mamá, Quico! Porque contra semejante venta no hay quién compita. — Doña Florinda",
+          "¡Chanfle! Ni con la Chicharra Paralizadora frenan el ritmo demoledor de este turno. — El Chapulín Colorado",
+          "¡Ya nos cayó el chahuistle! Dijo la competencia cuando vio la venta que te acabas de aventar. — Ludovico P. Luche",
+          "Kowalski, opciones... ¡Ninguna, señor, este colaborador ya reventó el sistema! — Skipper",
+          "Vengadores... ¡reúnanse a ver semejante ticketazo! — Avengers: Endgame",
+          "La alarma del multiverso se activó: anomalía de venta masiva detectada en tu caja. — Miguel O'Hara",
+          "¡Dinoco te está buscando! Acabas de ganar la Copa Pistón con este señor rebase. — Strip 'El Rey' Weathers",
+          "¡La aventura nos aguarda! Y este ticketazo acaba de despegar directo a la cima. — Up",
+          "¡Tenemos un 33-12! Venta radioactiva de alto calibre detectada en el sistema. — Monsters", Inc.,
+          "¡Kame Hame Ha directo a la terminal! Cobro legendario registrado. — Goku",
+          "¡Es una aberración!... Dijo la competencia al ver semejante récord. — Calamardo",
+          "El condensador de flujos funcionando al cien por ciento: corte de caja salvado. — Doc Brown"
+        ];
+
+        const popTier3 = [
+          "¡Yuju! ¡Marge, mira! Metí un ticket tan grande que salvó la planta nuclear. — Homero Simpson",
+          "Smithers, ¿quién es ese colaborador estrella? —Es el que acaba de romper la tabla, señor. — Sr. Burns & Smithers",
+          "¡Mamá! ¡Phineas y Ferb están rompiendo el sistema con un ticket imposible! — Candace",
+          "¡Chanfle! Hasta al Señor Barriga se le olvidó cobrar la renta con este numerote. — El Chavo",
+          "Todos mis movimientos están fríamente calculados: el cliente pagó y el corte quedó salvado. — El Chapulín Colorado",
+          "¡Eres un animal, Ludovico!... Pero admito que este cobro te quedó de campeonato. — Federica P. Luche",
+          "¡Sonrían y saluden, muchachos! Cobramos pesado y fingimos demencia. — Skipper",
+          "Hulk aplasta presupuestos: ticket colosal registrado con éxito. — The Avengers",
+          "Es un evento canónico: en todas las dimensiones estabas destinado a romper el sistema con este ticket. — Miguel O'Hara",
+          "¡Cuchao! Venta registrada a la velocidad de la luz. — Rayo McQueen",
+          "Cuando todos sean súper... nadie lo será. Excepto tú con este señor ticket. — Síndrome",
+          "¡Mío! ¡Mío! ¡Mío!... Dijeron todos al ver semejante venta en el tablero. — Las Gaviotas",
+          "¡Skadoosh! Le diste el toque de la llave dactilar a la tabla de posiciones. — Po",
+          "¡Estoy listo, estoy listo, estoy listo... para meter otro número descomunal! — Bob Esponja",
+          "¡Boom, baby! Acabas de arruinar el ritmo de la competencia por completo. — Kuzco"
+        ];
+
+        const popTier2 = [
+          "¡D'oh! Dijo la competencia cuando vio el numerote que acabas de registrar. — Homero Simpson",
+          "¿Un colaborador cualquiera?... ¡¿PERRY EL COLABORADOR ESTRELLA?! — Dr. Doofenshmirtz",
+          "Tenía que ser el Chavo del ocho... cobrando pesado y dejando a todos mudos. — Don Ramón",
+          "Mis antenitas de vinil detectan la presencia de un ticket absurdamente colosal. — El Chapulín Colorado",
+          "¡Me das asco, Ludovico!... Bueno, viéndolo bien, con este corte de caja hasta guapo te ves. — Federica P. Luche",
+          "¡Abran paso al Rey Julien! Porque a este colaborador le gusta mover los números. — Rey Julien",
+          "Yo soy Iron Man. Y acabo de meter la venta que salva el turno entero. — Tony Stark",
+          "Toca la pantalla despacito... 'Ey'. Listo, ticket cerrado con carisma puro. — Miles Morales",
+          "Gira a la derecha para ir a la izquierda... y directo a la cima del tablero. — Doc Hudson",
+          "Tu identidad secreta está a salvo, pero tu récord en la tabla ya lo vio todo el mundo. — Mr. Increíble",
+          "Nadaremos, nadaremos... en un mar de tickets pesados hoy. — Dory",
+          "¡La garra te ha elegido! Salvaste el turno como todo un juguete de colección. — Los Marcianitos",
+          "Gracias por elevar tu ki: esta Genkidama comercial salvó el turno. — Goku",
+          "¡Huele a dinero fresco! Don Cangrejo estaría llorando de felicidad sobre este recibo. — Don Cangrejo"
+        ];
+
+        const popTier1 = [
+          "¡Ay, caramba! Ni Bart con una resortera causa tanto impacto en el sistema. — Bart Simpson",
+          "No vives de ensalada... vives de meter ventas legendarias como esta. — Homero Simpson",
+          "Ya sé lo que vamos a hacer hoy: liderar la tabla de punta a punta. — Phineas",
+          "Fue sin querer queriendo... pero el ticket cayó completito al sistema. — El Chavo",
+          "¡No contaban con mi astucia!... Y el cliente no contaba con semejante sablazo. — El Chapulín Colorado",
+          "¡¿Por qué no eres un colaborador normal?!... ¡Mírate, metiendo tickets monumentales! — Federica P. Luche",
+          "¿Cuál es la diferencia entre un vendedor común y un titán? ¡La presentación! — Megamente",
+          "Puedo hacer esto todo el día... pero con este número ya me gané el descanso. — Capitán América",
+          "¿Un salto de fe? Nah, salto con estilo directo al primer lugar del turno. — Miles Morales",
+          "Soy veloz. Un ganador, 42 perdedores... yo desayuno metas para el almuerzo. — Rayo McQueen",
+          "¡Sin capas! Solo pura velocidad y puntería para registrar en grande. — Edna Moda",
+          "Los peces son amigos, no comida... pero los clientes con saldo son una bendición. — Bruce",
+          "Hay una serpiente en mi bota... y un ticket legendario en mi sistema. — Woody",
+          "Insecto... admito que esta vez sí me superaste en el tablero. — Vegeta",
+          "El dinero siempre tiene la razón, muchacho: bienvenido al Crustáceo Cascarudo. — Don Cangrejo"
+        ];
+
         let arrayElegido = [];
 
         if (montoVenta >= 1300) {
-          arrayElegido = [
-            `¡NIVEL DIOS ALCANZADO ${nom}! 🌟 Esta venta pasará a la historia. 🏛️`,
-            `¡BRUTAL! Has destrozado la gráfica, ${nom}. 🦖💥`,
-            `¡Felicidades Leyenda! Vender tanto es de otro planeta, ${nom}. 🛸👽`,
-            `¡Simplemente ESPECTACULAR! Hoy demostraste quién manda, ${nom}. 👑🔥`,
-            `¡Venta Galáctica! Te fuiste a las estrellas, ${nom}. 🌌🚀`,
-            `¡${nom} ha hackeado el sistema! Qué cantidad tan irreal. 💻👾`,
-            `¡TITÁN DE LAS VENTAS! ${nom} aplastando la meta. 🦾`,
-            `¡Reverencia para ${nom}! Un ticket que deja sin palabras. 🙇‍♂️`,
-            `¡Monstruoso! Nadie vende como tú, ${nom}. 🐲`,
-            `¡El Olimpo de las ventas tiene a ${nom}! ⚡🏔️`
-          ];
+          arrayElegido = popTier5;
         } else if (montoVenta >= 1100) {
-          arrayElegido = [
-            `¡Nivel Maestro ${nom}! Más de mil pesos en un solo ticket. 👑💰`,
-            `¡Estás rompiendo todos los récords ${nom}! 🤯`,
-            `¡WOW! ${nom} es oficialmente una máquina de vender. 🤖💯`,
-            `¡Qué barbaridad ${nom}! No hay quien te pare. 💎`,
-            `¡El club de los 4 dígitos! Felicidades, ${nom}. 🎩`,
-            `¡Venta Colosal! Eres una fuerza de la naturaleza, ${nom}. 🌪️`,
-            `¡Millar superado! Felicidades por este hito, ${nom}. 🏔️`,
-            `¡Ticket de Oro! Qué bárbaro, ${nom}. 🥇`,
-            `¡Estás en fuego, ${nom}! Literalmente quemando la caja. 🔥🚒`,
-            `¡Una venta magistral, ${nom}! Mis respetos. 🎩👌`
-          ];
+          arrayElegido = popTier4;
         } else if (montoVenta >= 900) {
-          arrayElegido = [
-            `¡Impresionante ${nom}! Ya estás en las grandes ligas. ⚾🏆`,
-            `¡Qué chulada de venta! Nos dejaste con el ojo cuadrado, ${nom}. 👀🔥`,
-            `¡CASI EL MILLAR! Mereces aplausos, ${nom}. 👏`,
-            `¡Andas imparable hoy ${nom}! 🚀🌟`,
-            `¡Cerca de los 4 dígitos! Qué joya de ticket, ${nom}. 💍`,
-            `¡Venta ÉPICA! Eres un crack, ${nom}. ⚡`,
-            `¡Nivelazo ${nom}! Esta venta es para enmarcarla. 🖼️`,
-            `¡Dando cátedra de ventas, ${nom}! 👨‍🏫`,
-            `¡Te luciste ${nom}! Qué pedazo de ticket. 🥩`,
-            `¡Súper venta! Eres un orgullo para el equipo, ${nom}. 🦁`,
-            `¡Impresionante cantidad, ${nom}! 🤑`,
-            `¡Rozando los mil pesos! Bien hecho ${nom}. 🎯`,
-            `¡Qué poder de venta tienes, ${nom}! 🦸‍♂️`,
-            `¡Fenomenal ${nom}! Un ticket que marca la diferencia. ☄️`,
-            `¡Magia pura en las ventas, ${nom}! 🧙‍♂️`
-          ];
+          arrayElegido = popTier3;
         } else if (montoVenta >= 700) {
-          arrayElegido = [
-            `¡Ufff ${nom}! Ya estamos subiendo de nivel. 📈`,
-            `¡Eso es todo ${nom}! Sumaste en grande. 💸`,
-            `¡Ojo aquí! ${nom} se aventó una venta muy top. 🤩`,
-            `¡Buenísima cantidad ${nom}! Se nota cuando le echas ganas. ✨`,
-            `¡Qué buena cifra, ${nom}! Felicidades. 🍾`,
-            `¡Wow ${nom}! Esta venta sí que destaca. 🌟`,
-            `¡Excelente ticket de alto valor, ${nom}! 💎`,
-            `¡Rompiendo la barrera de los 700, bien ahí ${nom}! 🚀`,
-            `¡Subiendo el promedio! Gracias ${nom}. 📊`,
-            `¡Qué ticket tan jugoso, ${nom}! 🧃`,
-            `¡Esa es una venta de peso, ${nom}! 🏋️‍♂️`,
-            `¡Felicidades ${nom}! Se nota tu poder de convencimiento. 🗣️`,
-            `¡Venta Premium desbloqueada por ${nom}! 🔓`,
-            `¡Excelente nivel de venta, ${nom}! 🏅`,
-            `¡Te volaste la barda con esta, ${nom}! 🏟️`
-          ];
+          arrayElegido = popTier2;
         } else {
-          // Ventas base (menores a 700)
-          arrayElegido = [
-            `¡Excelente trabajo, ${nom}! Sigue así. 🚀`,
-            `¡Boom! Otra venta exitosa a la cuenta, ${nom}. 💥`,
-            `Tu esfuerzo hace la diferencia, ¡gracias ${nom}! 🙌`,
-            `¡Imparable ${nom}! Tu ticket ya está en validación. ⚡`,
-            `¡Genial ${nom}! Vas por un excelente camino. 🌟`,
-            `Cada venta cuenta, ¡gran trabajo ${nom}! 💪`,
-            `¡Muy bien hecho ${nom}! Súmale otra al marcador. 🎯`,
-            `¡Buenísima venta ${nom}! A seguir rompiéndola. 🔥`,
-            `¡Eso es todo ${nom}! Seguimos sumando. 👏`,
-            `¡Qué buen ritmo traes, ${nom}! No le aflojes. 🏃‍♂️💨`,
-            `¡Anotada, ${nom}! Directo a tus métricas. 📊`,
-            `¡Excelente ${nom}! Tu dedicación se nota. 💯`,
-            `¡Felicidades ${nom}! Un ticket más para brillar. ✨`,
-            `¡Con todo ${nom}! Esa es la actitud ganadora. 🏆`,
-            `¡Registrada con éxito, ${nom}! ✅`,
-            `¡Venta asegurada! Bien bajado ese balón, ${nom}. ⚽`,
-            `¡Qué buena venta ${nom}! Sigue con esa energía. 🔋`,
-            `¡Sumando victorias, ${nom}! 🏅`,
-            `¡Pim, pam, pum! Otra venta de ${nom}. 🥊`,
-            `¡Chulada de venta, ${nom}! A por la siguiente. 🏃‍♀️`,
-            `¡No hay quien te pare hoy, ${nom}! 🚀`,
-            `¡Ticket arriba! Gracias por tu esfuerzo, ${nom}. 📈`,
-            `¡Eres grande ${nom}! Excelente registro. 🐘`,
-            `¡Venta confirmada! Qué buen trabajo, ${nom}. 🤝`,
-            `¡Vientos ${nom}! Seguimos con la racha. 🌪️`,
-            `¡Un éxito más para ${nom}! 🎉`,
-            `¡Bien logrado, ${nom}! 🎈`,
-            `¡Excelente aporte, ${nom}! 🧩`,
-            `¡Qué bárbaro ${nom}! Sigue vendiendo así. 🛍️`,
-            `¡Misión cumplida, ${nom}! 🕵️‍♂️`
-          ];
+          arrayElegido = popTier1;
         }
 
         const mensajeMotivacional = arrayElegido[Math.floor(Math.random() * arrayElegido.length)];
@@ -2484,6 +2486,8 @@
             </div>
           </div>
         `;
+        // 🎆 Lanzar confeti al registrar la venta exitosamente
+        if (typeof window.launchConfetti === 'function') window.launchConfetti();
       } catch (err) {
         _vxState.loading = false; _vxState.error = err.message;
         _renderVxForm(container);
@@ -2751,6 +2755,119 @@
     if(currentUser.role==='admin'){mountAdminDashboard(root);return;}
     mountLeaderDashboard(root);
   }
+  </script>
+
+  <!-- ============================================================
+       MEJORAS VISUALES — JS (Ripple, Confeti, Contadores, Transiciones)
+       100% Frontend — Cero impacto en servidor ni base de datos
+       ============================================================ -->
+  <script>
+  // ── 1. RIPPLE EFFECT en todos los botones ──────────────────────
+  document.addEventListener('pointerdown', function(e) {
+    const btn = e.target.closest('.btn, .vx-btn-primary, button.btn-primary, button.btn-secondary, button.btn-ghost, button.btn-danger');
+    if (!btn) return;
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height) * 2;
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-wave';
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  }, { passive: true });
+
+  // ── 2. CONFETI en pantalla de venta exitosa ─────────────────────
+  function launchConfetti() {
+    const existing = document.getElementById('confetti-canvas');
+    if (existing) existing.remove();
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'confetti-canvas';
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+
+    const COLORS = ['#c8102e','#ffffff','#ff6b6b','#ffd700','#ff8c42','#4ecdc4','#45b7d1'];
+    const pieces = Array.from({length: 90}, () => ({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * 100,
+      r: 5 + Math.random() * 7,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      speed: 2.5 + Math.random() * 3.5,
+      angle: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.2,
+      wobble: Math.random() * 10,
+      wobbleSpeed: 0.05 + Math.random() * 0.05,
+      wobbleAngle: Math.random() * Math.PI * 2,
+      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+    }));
+
+    let frame = 0;
+    const maxFrames = 110;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const progress = frame / maxFrames;
+      pieces.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = progress < 0.7 ? 1 : 1 - ((progress - 0.7) / 0.3);
+        ctx.fillStyle = p.color;
+        ctx.translate(p.x + Math.sin(p.wobbleAngle) * p.wobble, p.y);
+        ctx.rotate(p.angle);
+        if (p.shape === 'rect') {
+          ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 1.6);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r / 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+        p.y += p.speed;
+        p.angle += p.spin;
+        p.wobbleAngle += p.wobbleSpeed;
+      });
+      frame++;
+      if (frame < maxFrames) requestAnimationFrame(draw);
+      else canvas.remove();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  // Exponer globalmente para llamarla desde el éxito de registro de venta
+  window.launchConfetti = launchConfetti;
+
+  // ── 3. CONTADOR ANIMADO para KPIs ──────────────────────────────
+  function animateCounter(el, targetValue, prefix = '', suffix = '', duration = 800) {
+    if (!el) return;
+    const start = performance.now();
+    const startVal = 0;
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startVal + (targetValue - startVal) * eased);
+      el.textContent = prefix + current.toLocaleString('es-MX') + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    el.classList.add('kpi-animating');
+    requestAnimationFrame(step);
+  }
+  window.animateCounter = animateCounter;
+
+  // ── 4. SECCIÓN ENTER — Transición suave al cambiar de vista ────
+  // Observamos mutaciones en #root para aplicar la animación
+  const _sectionObserver = new MutationObserver(() => {
+    const content = document.querySelector('.page-content, .vx-panel-root, .admin-content');
+    if (content && !content.classList.contains('section-enter')) {
+      content.classList.add('section-enter');
+      content.addEventListener('animationend', () => content.classList.remove('section-enter'), { once: true });
+    }
+  });
+  _sectionObserver.observe(document.getElementById('root'), { childList: true, subtree: false });
+
   </script>
 </body>
 </html>
