@@ -2470,27 +2470,33 @@
           arrayElegido = popTier1;
         }
 
-        // ── Sistema de Mazo Anti-Repetición ──────────────────────
-        // Usa localStorage para recordar qué frases ya salieron en ESTE celular.
-        // Solo repite cuando ya se agotaron TODAS las frases del nivel.
-        function pickPhrase(pool, tierKey) {
-          const storageKey = 'vx_deck_' + tierKey;
-          let remaining = [];
-          try {
-            const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            // Filtrar índices válidos del pool actual
-            remaining = saved.filter(i => i < pool.length);
-          } catch(e) { remaining = []; }
+        // ── Sistema de Semilla Anti-Repetición Global ─────────────
+        // Combina: nombre del colaborador + franja horaria + tier
+        // → personas distintas = frases distintas
+        // → misma persona en diferente momento = frase diferente
+        // → cero servidor, cero base de datos
+        function pickPhrase(pool, nom, tier) {
+          // Franja de tiempo: cambia cada 2 minutos para máxima variedad
+          const now = new Date();
+          const timeSlot = Math.floor((now.getHours() * 60 + now.getMinutes()) / 2);
 
-          // Si el mazo está vacío, recargarlo con todos los índices barajados
-          if (remaining.length === 0) {
-            remaining = pool.map((_, i) => i).sort(() => Math.random() - 0.5);
+          // Hash determinístico: nombre + franja + tier
+          const seed = (nom + '_' + timeSlot + '_' + tier).toUpperCase();
+          let hash = 5381;
+          for (let i = 0; i < seed.length; i++) {
+            hash = ((hash << 5) + hash) + seed.charCodeAt(i);
+            hash = hash & hash; // forzar 32-bit
           }
 
-          // Sacar el primer índice del mazo
-          const chosenIndex = remaining.shift();
-          try { localStorage.setItem(storageKey, JSON.stringify(remaining)); } catch(e) {}
-          return pool[chosenIndex];
+          // Usar localStorage como tiebreaker si coinciden nombre+hora exacta
+          const countKey = 'vx_count_' + tier;
+          let count = 0;
+          try { count = parseInt(localStorage.getItem(countKey) || '0'); } catch(e) {}
+          count++;
+          try { localStorage.setItem(countKey, count); } catch(e) {}
+
+          const index = Math.abs(hash + count) % pool.length;
+          return pool[index];
         }
 
         const tierKey = montoVenta >= 1300 ? 't5'
@@ -2499,7 +2505,7 @@
                       : montoVenta >= 700  ? 't2'
                       : 't1';
 
-        const mensajeMotivacional = pickPhrase(arrayElegido, tierKey);
+        const mensajeMotivacional = pickPhrase(arrayElegido, nom, tierKey);
 
 
         container.innerHTML = `
