@@ -2470,7 +2470,37 @@
           arrayElegido = popTier1;
         }
 
-        const mensajeMotivacional = arrayElegido[Math.floor(Math.random() * arrayElegido.length)];
+        // ── Sistema de Mazo Anti-Repetición ──────────────────────
+        // Usa localStorage para recordar qué frases ya salieron en ESTE celular.
+        // Solo repite cuando ya se agotaron TODAS las frases del nivel.
+        function pickPhrase(pool, tierKey) {
+          const storageKey = 'vx_deck_' + tierKey;
+          let remaining = [];
+          try {
+            const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            // Filtrar índices válidos del pool actual
+            remaining = saved.filter(i => i < pool.length);
+          } catch(e) { remaining = []; }
+
+          // Si el mazo está vacío, recargarlo con todos los índices barajados
+          if (remaining.length === 0) {
+            remaining = pool.map((_, i) => i).sort(() => Math.random() - 0.5);
+          }
+
+          // Sacar el primer índice del mazo
+          const chosenIndex = remaining.shift();
+          try { localStorage.setItem(storageKey, JSON.stringify(remaining)); } catch(e) {}
+          return pool[chosenIndex];
+        }
+
+        const tierKey = montoVenta >= 1300 ? 't5'
+                      : montoVenta >= 1100 ? 't4'
+                      : montoVenta >= 900  ? 't3'
+                      : montoVenta >= 700  ? 't2'
+                      : 't1';
+
+        const mensajeMotivacional = pickPhrase(arrayElegido, tierKey);
+
 
         container.innerHTML = `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; padding: 100px 20px 40px 20px;">
