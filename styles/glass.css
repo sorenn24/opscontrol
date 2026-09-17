@@ -1,0 +1,224 @@
+﻿/* ============================================================
+   GLASS.CSS — Efecto Liquid Glass
+   100% Additive — No modifica estilos existentes
+   GPU-accelerated — Cero impacto en Render / MongoDB
+   ============================================================ */
+
+/* ── 1. FONDO CON ORBES ANIMADOS ─────────────────────────── */
+body {
+  background-color: hsl(0, 0%, 93%);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 15% 20%, hsla(0, 78%, 55%, 0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 85% 75%, hsla(0, 78%, 46%, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, hsla(0, 60%, 90%, 0.25) 0%, transparent 65%);
+  background-attachment: fixed;
+}
+
+/* ── 2. TOKENS GLASS ─────────────────────────────────────── */
+:root {
+  --glass-bg:        rgba(255, 255, 255, 0.60);
+  --glass-bg-strong: rgba(255, 255, 255, 0.80);
+  --glass-border:    rgba(255, 255, 255, 0.75);
+  --glass-border-subtle: rgba(255, 255, 255, 0.45);
+  --glass-blur:      blur(18px) saturate(180%);
+  --glass-blur-sm:   blur(10px) saturate(160%);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.09),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.04) inset;
+  --glass-shadow-lg:
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.95) inset;
+}
+
+/* ── 3. LOGIN CARD — Cristal Premium ─────────────────────── */
+.login-card {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow-lg) !important;
+}
+
+.login-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%,  hsla(0, 78%, 55%, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 85%,  hsla(0, 78%, 46%, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 50% 50%,  hsla(0,  0%, 96%, 1.00) 0%, hsl(0, 5%, 92%) 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* ── 4. CARDS GENERALES — Vidrio esmerilado ──────────────── */
+.card,
+.card-elevated {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur-sm) !important;
+  -webkit-backdrop-filter: var(--glass-blur-sm) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+/* ── 5. VX KPI CARDS ──────────────────────────────────────── */
+.vx-kpi-card {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+  position: relative;
+  overflow: hidden;
+}
+/* Reflejo superior */
+.vx-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, transparent 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* ── 6. VX CARDS DE VENTA ────────────────────────────────── */
+.vx-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur-sm) !important;
+  -webkit-backdrop-filter: var(--glass-blur-sm) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+.vx-card-header {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-bottom: 1px solid var(--glass-border-subtle) !important;
+}
+.vx-card-actions {
+  background: rgba(255, 255, 255, 0.30) !important;
+  border-top: 1px solid var(--glass-border-subtle) !important;
+}
+
+/* ── 7. FORMULARIO VX — Cristal del registro ─────────────── */
+.vx-login-container,
+.vx-form-container {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow-lg) !important;
+}
+
+/* ── 8. INPUTS DE VENTAS — Vidrio sutil ──────────────────── */
+.vx-input {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.70) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset !important;
+}
+.vx-input:focus {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* ── 9. PIN INPUT ─────────────────────────────────────────── */
+.pin-input {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.80) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.95) inset !important;
+}
+.pin-input:focus {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* ── 10. HEADER DEL LÍDER — Cristal rojo ─────────────────── */
+.leader-header {
+  background: linear-gradient(135deg,
+    hsla(0, 78%, 38%, 0.92) 0%,
+    hsla(0, 78%, 46%, 0.88) 100%) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow:
+    0 4px 24px rgba(200, 16, 46, 0.25),
+    0 1px 0 rgba(255,255,255,0.12) inset !important;
+}
+
+/* ── 11. TABS DE NAVEGACIÓN ──────────────────────────────── */
+.leader-nav-tabs,
+.admin-tab-bar {
+  background: rgba(255, 255, 255, 0.70) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--glass-border-subtle) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+/* ── 12. MODAL SHEET — Cristal profundo ──────────────────── */
+.modal-sheet {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: blur(24px) saturate(200%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-bottom: none !important;
+  box-shadow: var(--glass-shadow-lg) !important;
+}
+
+/* ── 13. TOAST — Vidrio de notificación ──────────────────── */
+.toast {
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow:
+    var(--shadow-lg),
+    0 1px 0 rgba(255,255,255,0.25) inset !important;
+}
+
+/* ── 14. BOTÓN PRIMARIO — Espejo rojo ────────────────────── */
+.btn-primary,
+.vx-btn-primary {
+  background: linear-gradient(145deg,
+    hsl(0, 78%, 52%) 0%,
+    hsl(0, 78%, 38%) 100%) !important;
+  box-shadow:
+    0 6px 20px hsla(0, 78%, 46%, 0.40),
+    0 1px 0 rgba(255,255,255,0.25) inset,
+    0 -1px 0 rgba(0,0,0,0.15) inset !important;
+  border: 1px solid hsla(0, 78%, 60%, 0.30) !important;
+}
+.btn-primary:hover,
+.vx-btn-primary:hover {
+  box-shadow:
+    0 10px 30px hsla(0, 78%, 46%, 0.50),
+    0 1px 0 rgba(255,255,255,0.30) inset,
+    0 -1px 0 rgba(0,0,0,0.15) inset !important;
+}
+
+/* ── 15. LEADER-ROW (filas de empleados) ─────────────────── */
+.leader-row {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+}
+
+/* ── 16. LOGO DEL LOGIN — Glow rojo intenso ─────────────── */
+.login-logo {
+  box-shadow:
+    0 10px 30px hsla(0, 78%, 46%, 0.40),
+    0 2px 0 rgba(255,255,255,0.25) inset !important;
+}
+
+/* ── FALLBACK: Sin soporte para backdrop-filter ──────────── */
+@supports not (backdrop-filter: blur(1px)) {
+  .login-card,
+  .vx-login-container,
+  .vx-form-container,
+  .card,
+  .vx-kpi-card,
+  .vx-card,
+  .modal-sheet {
+    background: rgba(255, 255, 255, 0.97) !important;
+  }
+}
