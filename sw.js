@@ -1,8 +1,8 @@
-﻿// ============================================================
+// ============================================================
 // SERVICE WORKER — OpsControl PWA
 // Cache-first para assets estaticos, network-first para API
 // ============================================================
-const CACHE_NAME = 'opscontrol-v1';
+const CACHE_NAME = 'opscontrol-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   '/styles/reset.css',
   '/styles/tokens.css',
   '/styles/app.css',
+  '/styles/glass.css',
   '/components/Login/Login.css',
   '/components/LeaderDashboard/LeaderDashboard.css',
   '/components/AdminDashboard/AdminDashboard.css',
