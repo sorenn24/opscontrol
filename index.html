@@ -2920,6 +2920,23 @@
     });
   }
 
+  // ── 6. Protección de vista básica (deshabilitar clic derecho e inspección) ──
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    // F12
+    if (e.key === 'F12') { e.preventDefault(); return false; }
+    // Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C (DevTools)
+    if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+      e.preventDefault();
+      return false;
+    }
+    // Ctrl+U (Ver código fuente)
+    if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
   </script>
 </body>
 </html>

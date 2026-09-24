@@ -80,11 +80,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ── Frontend estático ─────────────────────────────────────────
-// El servidor Express sirve los archivos del frontend directamente
+// ── Frontend estático protegido ───────────────────────────────
 const FRONTEND_DIR = path.join(__dirname, '..');  // branch-ops/
 
-app.use(express.static(FRONTEND_DIR));
+// Servir únicamente los recursos de presentación requeridos por index.html
+app.use('/styles', express.static(path.join(FRONTEND_DIR, 'styles')));
+app.use('/components', express.static(path.join(FRONTEND_DIR, 'components')));
+app.use('/assets', express.static(path.join(FRONTEND_DIR, 'assets')));
+app.get('/manifest.json', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'manifest.json')));
+app.get('/sw.js', (req, res) => res.sendFile(path.join(FRONTEND_DIR, 'sw.js')));
 
 // Todas las rutas desconocidas → index.html (SPA fallback)
 app.get('*', (req, res) => {
