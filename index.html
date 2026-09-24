@@ -385,37 +385,6 @@
   function saveSubmission(s){const ss=_r(SK.SUBMISSIONS,[]);const i=ss.findIndex(x=>x.userId===s.userId&&x.turno===s.turno&&x.dateKey===s.dateKey);if(i>=0)ss[i]=s;else ss.push(s);_w(SK.SUBMISSIONS,ss);}
   function getSubmissionsForDate(d){return _r(SK.SUBMISSIONS,[]).filter(s=>s.dateKey===d);}
 
-  // ── User Management (persisted) ──────────────────────────────
-  const DEFAULT_USERS=[
-    {id:'alessandro',name:'Alessandro',role:'leader',pin:'1234'},
-    {id:'cesar',name:'César',role:'leader',pin:'1234'},
-    {id:'sam',name:'Sam',role:'leader',pin:'1234'},
-    {id:'soren',name:'Soren',role:'leader',pin:'1234'},
-    {id:'jefa',name:'La Jefa',role:'admin',pin:'9999'},
-  ];
-  function getStoredUsers(){
-    const stored=_r(SK.USERS,null);
-    if(!stored){_w(SK.USERS,DEFAULT_USERS);return DEFAULT_USERS;}
-    // Ensure admin always exists
-    if(!stored.find(u=>u.role==='admin')){stored.push(DEFAULT_USERS.find(u=>u.role==='admin'));}
-    return stored;
-  }
-  function saveUsers(users){_w(SK.USERS,users);}
-  function addLeader(name,pin){
-    const users=getStoredUsers();
-    const id='u_'+Date.now();
-    users.push({id,name:name.trim(),role:'leader',pin:pin.trim()});
-    saveUsers(users);
-    return id;
-  }
-  function updateLeader(id,name,pin){
-    const users=getStoredUsers().map(u=>u.id===id?{...u,name:name.trim(),pin:pin.trim()}:u);
-    saveUsers(users);
-  }
-  function deleteLeader(id){
-    const users=getStoredUsers().filter(u=>u.id!==id||u.role==='admin');
-    saveUsers(users);
-  }
 
   // ============================================================
   // DATA — tasks
