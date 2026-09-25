@@ -2606,6 +2606,11 @@
             </select>
             <input type="text" id="vx-filter-nom" class="vx-input" placeholder="Nombre..." style="height:36px;padding:0 12px;width:120px;" value="${_vxPanelState.nombre}">
             <button id="vx-filter-btn" class="btn btn-secondary" style="height:36px;display:flex;align-items:center;gap:4px;">${icon('refresh',14)} Filtrar</button>
+            ${currentUser?.name === 'Soren' ? `
+            <button id="vx-export-btn" class="btn btn-secondary" style="height:36px;display:flex;align-items:center;gap:6px;background:#107c41;color:#ffffff;border-color:#107c41;font-weight:700;" title="Descargar listado en Excel">
+              ${icon('clipboard',14)} Exportar Excel
+            </button>
+            ` : ''}
           </div>
         </div>
 
@@ -2695,6 +2700,39 @@
       _vxPanelState.turno = document.getElementById('vx-filter-tur').value;
       _vxPanelState.nombre = document.getElementById('vx-filter-nom').value.trim();
       mountVxPanel(container);
+    });
+
+    document.getElementById('vx-export-btn')?.addEventListener('click', () => {
+      const data = _vxPanelState.ventas || [];
+      if (data.length === 0) {
+        showToast('No hay ventas para exportar en este filtro.', 'warning');
+        return;
+      }
+      
+      const headers = ['Fecha Ticket', 'Sucursal', 'Turno', 'Nombre Empleado', 'Apellido Empleado', 'Monto ($)', 'Estado Validación', 'Fecha Registro'];
+      const rows = data.map(v => [
+        `"${(v.fecha_ticket || '').replace(/"/g, '""')}"`,
+        `"${(v.sucursal || '').replace(/"/g, '""')}"`,
+        `"${(v.turno || '').replace(/"/g, '""')}"`,
+        `"${(v.empleado_nombre || '').replace(/"/g, '""')}"`,
+        `"${(v.empleado_apellido || '').replace(/"/g, '""')}"`,
+        (Number(v.monto) || 0).toFixed(2),
+        `"${(v.estado_validacion || '').replace(/"/g, '""')}"`,
+        `"${v.createdAt ? new Date(v.createdAt).toLocaleString('es-MX') : ''}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const filename = `Ventas_Extraordinarias_${_vxPanelState.date || 'todas'}_${_vxPanelState.sucursal || 'todas'}.csv`;
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Descargando archivo Excel...', 'success');
     });
 
     container.querySelectorAll('.vx-card-img-wrapper').forEach(w => {
