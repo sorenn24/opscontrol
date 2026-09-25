@@ -2708,31 +2708,127 @@
         showToast('No hay ventas para exportar en este filtro.', 'warning');
         return;
       }
-      
-      const headers = ['Fecha Ticket', 'Sucursal', 'Turno', 'Nombre Empleado', 'Apellido Empleado', 'Monto ($)', 'Estado Validación', 'Fecha Registro'];
-      const rows = data.map(v => [
-        `"${(v.fecha_ticket || '').replace(/"/g, '""')}"`,
-        `"${(v.sucursal || '').replace(/"/g, '""')}"`,
-        `"${(v.turno || '').replace(/"/g, '""')}"`,
-        `"${(v.empleado_nombre || '').replace(/"/g, '""')}"`,
-        `"${(v.empleado_apellido || '').replace(/"/g, '""')}"`,
-        (Number(v.monto) || 0).toFixed(2),
-        `"${(v.estado_validacion || '').replace(/"/g, '""')}"`,
-        `"${v.createdAt ? new Date(v.createdAt).toLocaleString('es-MX') : ''}"`
-      ]);
 
-      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const escapeXml = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+      let rowsXml = '';
+      data.forEach(v => {
+        const montoNum = Number(v.monto) || 0;
+        const fechaReg = v.createdAt ? new Date(v.createdAt).toLocaleString('es-MX') : '';
+        rowsXml += `
+        <Row ss:Height="22">
+          <Cell ss:StyleID="CellCenter"><Data ss:Type="String">${escapeXml(v.fecha_ticket)}</Data></Cell>
+          <Cell ss:StyleID="CellCenter"><Data ss:Type="String">${escapeXml(v.sucursal)}</Data></Cell>
+          <Cell ss:StyleID="CellCenter"><Data ss:Type="String">${escapeXml(v.turno)}</Data></Cell>
+          <Cell ss:StyleID="CellLeft"><Data ss:Type="String">${escapeXml(v.empleado_nombre)}</Data></Cell>
+          <Cell ss:StyleID="CellLeft"><Data ss:Type="String">${escapeXml(v.empleado_apellido)}</Data></Cell>
+          <Cell ss:StyleID="CellMoney"><Data ss:Type="Number">${montoNum.toFixed(2)}</Data></Cell>
+          <Cell ss:StyleID="CellStatus"><Data ss:Type="String">${escapeXml(v.estado_validacion)}</Data></Cell>
+          <Cell ss:StyleID="CellLeft"><Data ss:Type="String">${escapeXml(fechaReg)}</Data></Cell>
+        </Row>`;
+      });
+
+      const excelTemplate = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:html="http://www.w3.org/TR/REC-html40">
+  <Styles>
+    <Style ss:ID="Default" ss:Name="Normal">
+      <Alignment ss:Vertical="Center"/>
+      <Font ss:FontName="Calibri" ss:Size="11" ss:Color="#000000"/>
+    </Style>
+    <Style ss:ID="Header">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#FFFFFF"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#FFFFFF"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#FFFFFF"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#FFFFFF"/>
+      </Borders>
+      <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/>
+      <Interior ss:Color="#107C41" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="CellLeft">
+      <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+      </Borders>
+      <Font ss:FontName="Calibri" ss:Size="11"/>
+    </Style>
+    <Style ss:ID="CellCenter">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+      </Borders>
+      <Font ss:FontName="Calibri" ss:Size="11"/>
+    </Style>
+    <Style ss:ID="CellMoney">
+      <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+      </Borders>
+      <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#107C41"/>
+      <NumberFormat ss:Format="$#,##0.00"/>
+    </Style>
+    <Style ss:ID="CellStatus">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+        <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>
+      </Borders>
+      <Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1"/>
+    </Style>
+  </Styles>
+  <Worksheet ss:Name="Ventas Extraordinarias">
+    <Table ss:DefaultRowHeight="20">
+      <Column ss:Width="110"/>
+      <Column ss:Width="90"/>
+      <Column ss:Width="80"/>
+      <Column ss:Width="160"/>
+      <Column ss:Width="160"/>
+      <Column ss:Width="110"/>
+      <Column ss:Width="130"/>
+      <Column ss:Width="170"/>
+      <Row ss:Height="26">
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Fecha Ticket</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Sucursal</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Turno</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Nombre Empleado</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Apellido Empleado</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Monto ($)</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Estado Validación</Data></Cell>
+        <Cell ss:StyleID="Header"><Data ss:Type="String">Fecha Registro</Data></Cell>
+      </Row>
+      ${rowsXml}
+    </Table>
+  </Worksheet>
+</Workbook>`;
+
+      const blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const filename = `Ventas_Extraordinarias_${_vxPanelState.date || 'todas'}_${_vxPanelState.sucursal || 'todas'}.csv`;
+      const filename = `Comprobante_Ventas_${_vxPanelState.date || 'todas'}_${_vxPanelState.sucursal || 'todas'}.xls`;
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('Descargando archivo Excel...', 'success');
+      showToast('Descargando comprobante oficial de Excel...', 'success');
     });
 
     container.querySelectorAll('.vx-card-img-wrapper').forEach(w => {
